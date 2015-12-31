@@ -1,8 +1,8 @@
-# plex-gay-metadata-agent
+<h1>plex-gay-metadata-agent</h1>
 A Plex agent for fetching gay adult video metadata. https://forums.plex.tv/discussion/32922/adult-agents-for-gay-titles
 
 
-# INSTALLATION
+<h1>INSTALLATION</h1>
 1. Copy the Cockporn.bundle and any required site specific agents into the Plex Server plug-ins directory
 	Mac: ~/Library/Application Support/Plex Media Server/Plug-ins/
 	QNAP: /root/Library/Plex\ Media\ Server/Plug-ins/
@@ -11,17 +11,17 @@ A Plex agent for fetching gay adult video metadata. https://forums.plex.tv/discu
 4. Create a new library or change the agent of an existing library to the "Gay Adult" agent.
 
 
-HelixStudios.bundle
-	NAMING CONVENTION:
+<h1>HelixStudios.bundle</h1>
+	<h2>NAMING CONVENTION</h2>
 		Enclosing directory: "Helix Studios" or "HelixStudios"
 		Video Naming: Text title as displayed on Helix Studios website.
 
-	KNOWN ISSUES:
+	<h2>KNOWN ISSUES</h2>
 	- Limited ability to match titles with special characters in the name.
 	- Unable to get metadata for bonus material from other sites.
 	- Autoupdate may cause issues as it may cause a full metadata refresh when a new file is added.
 
 
 
-NOTES:
+<h1>NOTES</h1>
 All metadata is downloaded by the end users personal Plex Media Server instance and no metadata is embedded in the agent bundle itself.

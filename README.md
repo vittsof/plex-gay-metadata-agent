@@ -3,10 +3,11 @@ A Plex agent for fetching gay adult video metadata. https://forums.plex.tv/discu
 
 
 <h1>INSTALLATION</h1>
-1. Copy the Cockporn.bundle and any required site specific agents into the Plex Server plug-ins directory
-	Mac: ~/Library/Application Support/Plex Media Server/Plug-ins/
-	QNAP: /root/Library/Plex\ Media\ Server/Plug-ins/
-2. Login to the web interface and open settings
+1. Copy the Cockporn.bundle and any required site specific agents into the Plex Server plug-ins directory<br />
+	<b>Mac:</b> ~/Library/Application Support/Plex Media Server/Plug-ins/<br />
+	<b>QNAP:</b> /root/Library/Plex\ Media\ Server/Plug-ins/<br />
+        <b>Windows:</b> Drive leter:\Program Files (x86)\Plex\Plex Media Server\Resources\Plug-ins-*******
+2. Login to the web interface and open settings.
 3. In Settings > Server > Agents select "Gay Adult" and check all required agents.
 4. Create a new library or change the agent of an existing library to the "Gay Adult" agent.
 

@@ -61,7 +61,7 @@ class HelixStudios(Agent.Movies):
 					if re.search('^[0-9A-Za-z]*$', piece.replace('!', '')) is not None:
 						search_query_raw.append(piece)
 				search_query="+".join(search_query_raw)
-				Log(PLUGIN_LOG_TITLE + '- SEARCH - Search Query: %s' % search_query)
+				Log(PLUGIN_LOG_TITLE + ' - SEARCH - Search Query: %s' % search_query)
 				html=HTML.ElementFromURL(BASE_SEARCH_URL % search_query, sleep=REQUEST_DELAY)
 				search_results=html.xpath('//*[@class="video-gallery"]/li/a')
 				score=10
@@ -100,6 +100,8 @@ class HelixStudios(Agent.Movies):
 			Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_description: "%s"' % video_description)
 			video_cast = html.xpath('//*[@id="main"]/div[1]/div[1]/div[2]/table/tr[3]/td/a/text()')
 			Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_cast: "%s"' % video_cast)
+			video_themes = html.xpath('//*[@id="main"]/div[1]/div[1]/div[2]/table/tr[4]/td/a/text()')
+			Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_genres: "%s"' % video_themes)
 			# External 	https://cdn.helixstudios.com/img/300h/media/stills/hx109_scene52_001.jpg
 			# Member 	https://cdn.helixstudios.com/img/250w/media/stills/hx109_scene52_001.jpg
 			valid_image_names = list()
@@ -139,13 +141,24 @@ class HelixStudios(Agent.Movies):
 			# Try to get and process the video cast
 			try:
 				metadata.roles.clear()
-				htmlcast = html.xpath('//*[@id="main"]/div[1]/div[1]/div[2]/table/tr[3]/td/a')
+				htmlcast = html.xpath('//*[@id="main"]/div[1]/div[1]/div[2]/table/tr[3]/td/a/text()')
 				for cast in htmlcast:
-					cname = cast.text_content().strip()
+					cname = cast.strip()
 					Log(PLUGIN_LOG_TITLE + ' - UPDATE - Cast: %s' % cname)
 					if (len(cname) > 0):
 						role = metadata.roles.new()
 						role.actor = cname
+			except: pass
+			
+			# Try to get and process the video genres
+			try:
+				metadata.genres.clear()
+				genres = html.xpath('//*[@id="main"]/div[1]/div[1]/div[2]/table/tr[4]/td/a/text()')
+				for genre in genres:
+					genre = genre.strip()
+					Log(PLUGIN_LOG_TITLE + ' - UPDATE - Genre: %s' % genre)
+					if (len(genre) > 0):
+						metadata.genres.add(genre)
 			except: pass
 			
 			html.xpath('//*[@id="main"]/div[1]/div[1]/div[2]/table/tbody/tr/td/p/text()')

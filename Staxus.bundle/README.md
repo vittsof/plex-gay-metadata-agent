@@ -1,4 +1,6 @@
+# Staxus.bundle
 
+Plex metadata agent for fetching metadata for Staxus scenes.
 
 KNOWN ISSUES:
 - Limited ability to match titles with special characters in the name.

@@ -1,35 +1,30 @@
-#HelixStudios
+#Staxus
 import re, os, urllib
-PLUGIN_LOG_TITLE='Helix Studios'	# Log Title
+PLUGIN_LOG_TITLE='Staxus'	# Log Title
 
 VERSION_NO = '2016.01.03.1'
 
 REQUEST_DELAY = 0					# Delay used when requesting HTML, may be good to have to prevent being banned from the site
 
 # URLS
-BASE_URL='https://www.helixstudios.net%s'
+BASE_URL='http://staxus.com%s'
 
 # Example Video Details URL
-# https://www.helixstudios.net/video/3437/hosing-him-down.html
-BASE_VIDEO_DETAILS_URL='https://www.helixstudios.net/video/%s'
+# http://staxus.com/trial/gallery.php?id=4044
+BASE_VIDEO_DETAILS_URL='http://staxus.com/trial/%s'
 
 # Example Search URL: 
-# https://www.helixstudios.net/videos/?q=Hosing+Him+Down
-BASE_SEARCH_URL='https://www.helixstudios.net/videos/?q=%s'
+# http://staxus.com/trial/search.php?query=Staxus+Classic%3A+BB+Skate+Rave+-+Scene+1+-+Remastered+in+HD
+BASE_SEARCH_URL='http://staxus.com/trial/search.php?query=%s'
 
-# Example File Name:
-# https://media.helixstudios.com/scenes/hx111_scene2/hx111_scene2_member_1080p.mp4
-# FILENAME_PATTERN = re.compile("")
-# TITLE_PATTERN = re.compile("")
-
-ENCLOSING_DIRECTORY_LIST=["HelixStudios", "Helix Studios"]
+ENCLOSING_DIRECTORY_LIST=["Staxus"]
 
 def Start():
 	HTTP.CacheTime = CACHE_1WEEK
 	HTTP.Headers['User-agent'] = 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.2; Trident/4.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0)'
 
-class HelixStudios(Agent.Movies):
-	name = 'Helix Studios'
+class Staxus(Agent.Movies):
+	name = 'Staxus'
 	languages = [Locale.Language.NoLanguage, Locale.Language.English]
 	primary_provider = False
 	contributes_to = ['com.plexapp.agents.cockporn']
@@ -67,7 +62,7 @@ class HelixStudios(Agent.Movies):
 				search_query="+".join(search_query_raw)
 				self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Search Query: %s' % search_query)
 				html=HTML.ElementFromURL(BASE_SEARCH_URL % search_query, sleep=REQUEST_DELAY)
-				search_results=html.xpath('//*[@class="video-gallery"]/li/a')
+				search_results=html.xpath('//*[@class="reset collection-listing Marea"]/li/div/a')
 				score=10
 				# Enumerate the search results looking for an exact match. The hope is that by eliminating special character words from the title and searching the remainder that we will get the expected video in the results.
 				for result in search_results:
@@ -92,7 +87,7 @@ class HelixStudios(Agent.Movies):
 			file_path = media.items[0].parts[0].file
 			self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - File Path: %s' % file_path)
 			self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - metadata.id: %s' % metadata.id)
-			url = BASE_URL % metadata.id
+			url = BASE_VIDEO_DETAILS_URL % metadata.id
 
 			# Fetch HTML
 			html = HTML.ElementFromURL(url, sleep=REQUEST_DELAY)	
@@ -100,19 +95,16 @@ class HelixStudios(Agent.Movies):
 			# Set tagline to URL
 			metadata.tagline = url
 			
-			video_title = html.xpath('//div[@class="scene-title"]/text()')[0]
+			video_title = html.xpath('//div[@class="sidebar right sidebar-models"]/h2/text()')[0]
 			self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_title: "%s"' % video_title)
-			video_release_date = html.xpath('//*[@id="main"]/div[1]/div[1]/div[2]/table/tr[1]/td[1]/text()')[1]
+			video_release_date = html.xpath('//div[@class="sidebar right sidebar-models"]/p[1]/span/text()')[0]
 			self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_release_date: "%s"' % video_release_date)
-			video_description = html.xpath('//*[@id="main"]/div[1]/div[1]/div[2]/table/tr/td/p/text()')
+			video_description = html.xpath('//div[@class="col-main"]/p/text()')
 			self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_description: "%s"' % video_description)
-			
-			# External 	https://cdn.helixstudios.com/img/300h/media/stills/hx109_scene52_001.jpg
-			# Member 	https://cdn.helixstudios.com/img/250w/media/stills/hx109_scene52_001.jpg
+
 			valid_image_names = list()
 			i = 0
-			video_image_list = html.xpath('//*[@id="scene-just-gallery"]/a/img')
-			# self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_image_list: "%s"' % video_image_list)
+			video_image_list = html.xpath('//*[@class="reset collection-images"]/li/a/img')
 			try:
 				for image in video_image_list:
 					thumb_url = image.get('src')
@@ -129,7 +121,7 @@ class HelixStudios(Agent.Movies):
 
 			# Try to get description text
 			try:
-				raw_about_text=html.xpath('//*[@id="main"]/div[1]/div[1]/div[2]/table/tr/td/p')
+				raw_about_text=html.xpath('//div[@class="col-main"]/p')
 				self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - About Text - RAW %s', raw_about_text)
 				about_text=' '.join(str(x.text_content().strip()) for x in raw_about_text)
 				metadata.summary=about_text
@@ -137,7 +129,7 @@ class HelixStudios(Agent.Movies):
 
 			# Try to get release date
 			try:
-				release_date=html.xpath('//*[@id="main"]/div[1]/div[1]/div[2]/table/tr[1]/td[1]/text()')[1].strip()
+				release_date=html.xpath('//div[@class="sidebar right sidebar-models"]/p[1]/span/text()').strip()
 				self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - Release Date - New: %s' % release_date)
 				metadata.originally_available_at = Datetime.ParseDate(release_date).date()
 				metadata.year = metadata.originally_available_at.year
@@ -146,7 +138,7 @@ class HelixStudios(Agent.Movies):
 			# Try to get and process the video cast
 			try:
 				metadata.roles.clear()
-				htmlcast = html.xpath('//*[@id="main"]/div[1]/div[1]/div[2]/table/tr[3]/td/a/text()')
+				htmlcast = html.xpath('//div[@class="sidebar right sidebar-models"]/p[5]/text()')[0].split(', ')
 				self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - cast: "%s"' % htmlcast)
 				for cast in htmlcast:
 					cname = cast.strip()
@@ -158,7 +150,7 @@ class HelixStudios(Agent.Movies):
 			# Try to get and process the video genres
 			try:
 				metadata.genres.clear()
-				genres = html.xpath('//*[@id="main"]/div[1]/div[1]/div[2]/table/tr[4]/td/a/text()')
+				genres = html.xpath('//div[@class="sidebar right sidebar-models"]/p[3]/span/a/text()')
 				self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_genres: "%s"' % genres)
 				for genre in genres:
 					genre = genre.strip()
@@ -166,8 +158,17 @@ class HelixStudios(Agent.Movies):
 						metadata.genres.add(genre)
 			except: pass
 			
-			html.xpath('//*[@id="main"]/div[1]/div[1]/div[2]/table/tbody/tr/td/p/text()')
+			try:
+				rating = html.xpath('//div[@class="col-md-4 col-xs-12 stats-single"]/b/text()')[0].strip()
+				rating_count = html.xpath('//div[@class="col-md-4 col-xs-12 stats-single"]//strong/text()')[0]
+				rating_count = rating_count.replace('(Total votes: ', '')
+				rating_count = rating_count.replace(')', '')
+				self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_rating: "%s"', rating)
+				self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_rating_count: "%s"', rating_count)
+				metadata.audience_rating = rating
+				metadata.rating_count = rating_count
+			except: pass
 
 			metadata.posters.validate_keys(valid_image_names)
 			metadata.title = video_title
-			metadata.studio = "Helix Studios"
+			metadata.studio = "Staxus"

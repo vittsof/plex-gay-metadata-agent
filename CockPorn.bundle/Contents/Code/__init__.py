@@ -9,7 +9,7 @@ class CockPornAgent(Agent.Movies):
 	name = 'Gay Adult'
 	languages = [Locale.Language.NoLanguage, Locale.Language.English]
 	primary_provider = True
-	# accepts_from=['com.plexapp.agents.localmedia']
+	accepts_from=['com.plexapp.agents.localmedia']
 
 	def search(self, results, media, lang):
 		Log('\033[1mCock Porn - SEARCH CALLED - %s\033[0m', media.filename.split('%2F')[-1])

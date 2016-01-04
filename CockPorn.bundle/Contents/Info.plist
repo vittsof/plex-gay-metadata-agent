@@ -8,6 +8,10 @@
 	<string>Cock Porn</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.plexapp.agents.cockporn</string>
+	<key>PlexAgentAttributionText</key>
+	<string>
+		&lt;a href=&quot;https://github.com/iklier/plex-gay-metadata-agent&quot;&gt;CockPorn&lt;/a&gt; is a free adgent for Studios.&lt;br/&gt;
+	</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleShortVersionString</key>

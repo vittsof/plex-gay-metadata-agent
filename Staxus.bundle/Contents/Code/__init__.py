@@ -60,6 +60,7 @@ class Staxus(Agent.Movies):
 				remove_words = remove_words.replace('Staxus', '')
 				remove_words = re.sub('\(([^\)]+)\)', '', remove_words)
 				remove_words = remove_words.lstrip(' ')
+				remove_words = remove_words.rstrip(' ')
 				search_query_raw = list()
 				# Process the split filename to remove words with special characters. This is to attempt to find a match with the limited search function(doesn't process any non-alphanumeric characters correctly)
 				for piece in remove_words.split(' '):

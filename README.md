@@ -6,15 +6,18 @@ A Plex agent for fetching gay adult video metadata. https://forums.plex.tv/discu
 1. Copy the Cockporn.bundle and any required site specific agents into the Plex Server plug-ins directory<br />
 	<b>Mac:</b> ~/Library/Application Support/Plex Media Server/Plug-ins/<br />
 	<b>QNAP:</b> /root/Library/Plex\ Media\ Server/Plug-ins/<br />
-        <b>Windows:</b> Drive leter:\Program Files (x86)\Plex\Plex Media Server\Resources\Plug-ins-*******
+	<b>Windows:</b> %LOCALAPPDATA%\Plex Media Server\Plug-ins\<br />
+	<b>Raspberry Pi:</b> /var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Plug-ins<br />
 2. Login to the web interface and open settings.
 3. In Settings > Server > Agents select "Gay Adult" and check all required agents.
-4. Create a new library or change the agent of an existing library to the "Gay Adult" agent.
+4. In Settings > Server > Agents move The Movie Database to second to last and Local Media Assets (Movies) to last.
+5. In Settings > Server > Agents > The Movie Database > check "Include adult content"
+6. Create a new library or change the agent of an existing library to the "Gay Adult" agent.
 
 
 <h1>HelixStudios.bundle</h1>
 	NAMING CONVENTION:
-		Enclosing directory: "Helix Studios" or "HelixStudios"
+		Enclosing directory: Any folder that starts with "Helix"
 		Video Naming: Text title as displayed on Helix Studios website.
 
 	KNOWN ISSUES
@@ -22,6 +25,15 @@ A Plex agent for fetching gay adult video metadata. https://forums.plex.tv/discu
 	- Unable to get metadata for bonus material from other sites.
 	- Autoupdate may cause issues as it may cause a full metadata refresh when a new file is added.
 
+<h1>Staxus.bundle</h1>
+	NAMING CONVENTION:
+		Enclosing directory: "Staxus"
+		Video Naming: Text title or text of the title as displayed on Staxus website.
+
+	KNOWN ISSUES
+	- Limited ability to match titles with special characters in the name.
+	- Unable to get metadata for bonus material from other sites.
+	- Autoupdate may cause issues as it may cause a full metadata refresh when a new file is added.
 
 
 <h1>NOTES</h1>

@@ -2,7 +2,7 @@
 import re, os, urllib
 PLUGIN_LOG_TITLE='Helix Studios'	# Log Title
 
-VERSION_NO = '2016.01.03.1'
+VERSION_NO = '2016.01.04.1'
 
 REQUEST_DELAY = 0					# Delay used when requesting HTML, may be good to have to prevent being banned from the site
 
@@ -22,7 +22,7 @@ BASE_SEARCH_URL='https://www.helixstudios.net/videos/?q=%s'
 # FILENAME_PATTERN = re.compile("")
 # TITLE_PATTERN = re.compile("")
 
-ENCLOSING_DIRECTORY_LIST=["HelixStudios", "Helix Studios"]
+ENCLOSING_DIRECTORY_LIST=["Helix"]
 
 def Start():
 	HTTP.CacheTime = CACHE_1WEEK
@@ -52,16 +52,24 @@ class HelixStudios(Agent.Movies):
 		if media.items[0].parts[0].file is not None:
 			path_and_file = media.items[0].parts[0].file
 			self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - File Path: %s' % path_and_file)
+			path_and_file = os.path.splitext(path_and_file)[0]
 			enclosing_directory, file_name = os.path.split(path_and_file)
 			enclosing_directory, enclosing_folder = os.path.split(enclosing_directory)
-			self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Enclosing Folder: %s' % enclosing_folder)
+			self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Enclosing Folder: %s' % enclosing_folder[:5])
 			# Check if enclosing directory matches an element in the directory list.
-			if enclosing_folder in ENCLOSING_DIRECTORY_LIST:
+			if enclosing_folder[:5] in ENCLOSING_DIRECTORY_LIST:
 				self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - File Name: %s' % file_name)
 				self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Split File Name: %s' % file_name.split(' '))
+
+				remove_words = file_name.lower()
+				remove_words = remove_words.replace('helix studios', '')
+				remove_words = remove_words.replace('helixstudios', '')
+				remove_words = re.sub('\(([^\)]+)\)', '', remove_words)
+				remove_words = remove_words.lstrip(' ')
+				remove_words = remove_words.rstrip(' ')
 				search_query_raw = list()
 				# Process the split filename to remove words with special characters. This is to attempt to find a match with the limited search function(doesn't process any non-alphanumeric characters correctly)
-				for piece in file_name.split(' '):
+				for piece in remove_words.split(' '):
 					if re.search('^[0-9A-Za-z]*$', piece.replace('!', '')) is not None:
 						search_query_raw.append(piece)
 				search_query="+".join(search_query_raw)

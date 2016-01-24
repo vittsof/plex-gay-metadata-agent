@@ -2,7 +2,7 @@
 import re, os, urllib
 PLUGIN_LOG_TITLE='Helix Studios'	# Log Title
 
-VERSION_NO = '2016.01.04.1'
+VERSION_NO = '2016.01.24.1'
 
 REQUEST_DELAY = 0					# Delay used when requesting HTML, may be good to have to prevent being banned from the site
 
@@ -75,20 +75,18 @@ class HelixStudios(Agent.Movies):
 				search_query="+".join(search_query_raw)
 				self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Search Query: %s' % search_query)
 				html=HTML.ElementFromURL(BASE_SEARCH_URL % search_query, sleep=REQUEST_DELAY)
-				search_results=html.xpath('//*[@class="video-gallery"]/li/a')
+				search_results=html.xpath('//*[@class="video-gallery"]/li')
 				score=10
 				# Enumerate the search results looking for an exact match. The hope is that by eliminating special character words from the title and searching the remainder that we will get the expected video in the results.
 				for result in search_results:
-					video_url=result.get('href')
-					self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)
-					image_url=result.findall("img")[0].get("src")
-					self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - image url: %s' % image_url)
-					video_title=result.findall("img")[0].get("alt")
+					video_title=result.find('a').find("img").get("alt")
 					self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
+					video_url=result.find('a').get('href')
+					self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)
 					# Check the alt tag which includes the full title with special characters against the video title. If we match we nominate the result as the proper metadata. If we don't match we reply with a low score.
-					if video_title is file_name:
-						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match' + file_name + '== %s' % video_title)
-						results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 100, lang = lang, sleep = REQUEST_DELAY))
+					if video_title.lower() == file_name.lower():
+						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match: \'' + file_name.lower() + '\' == \'%s\'' % video_title.lower())
+						results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 100, lang = lang))
 					else:
 						score=score-1
 						results.Append(MetadataSearchResult(id = video_url, name = video_title, score = score, lang = lang))
@@ -108,12 +106,12 @@ class HelixStudios(Agent.Movies):
 			# Set tagline to URL
 			metadata.tagline = url
 			
-			video_title = html.xpath('//div[@class="scene-title"]/text()')[0]
+			video_title = html.xpath('//div[@class="scene-title"]/span/text()')[0]
 			self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_title: "%s"' % video_title)
-			video_release_date = html.xpath('//*[@id="main"]/div[1]/div[1]/div[2]/table/tr[1]/td[1]/text()')[1]
-			self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_release_date: "%s"' % video_release_date)
-			video_description = html.xpath('//*[@id="main"]/div[1]/div[1]/div[2]/table/tr/td/p/text()')
-			self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_description: "%s"' % video_description)
+			#video_release_date = html.xpath('//*[@id="main"]/div[1]/div[1]/div[2]/table/tr[1]/td[1]/text()')[1]
+			#self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_release_date: "%s"' % video_release_date)
+			#video_description = html.xpath('//*[@id="main"]/div[1]/div[1]/div[2]/table/tr/td/p/text()')
+			#self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_description: "%s"' % video_description)
 			
 			# External 	https://cdn.helixstudios.com/img/300h/media/stills/hx109_scene52_001.jpg
 			# Member 	https://cdn.helixstudios.com/img/250w/media/stills/hx109_scene52_001.jpg
@@ -124,9 +122,9 @@ class HelixStudios(Agent.Movies):
 			try:
 				for image in video_image_list:
 					thumb_url = image.get('src')
-					self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - thumb_url: "%s"' % thumb_url)
+					# self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - thumb_url: "%s"' % thumb_url)
 					poster_url = thumb_url.replace('300h', '1920w')
-					self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - poster_url: "%s"' % poster_url)
+					# self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - poster_url: "%s"' % poster_url)
 					valid_image_names.append(poster_url)
 					if poster_url not in metadata.posters:
 						try:

@@ -78,18 +78,34 @@ class HelixStudios(Agent.Movies):
 				search_results=html.xpath('//*[@class="video-gallery"]/li')
 				score=10
 				# Enumerate the search results looking for an exact match. The hope is that by eliminating special character words from the title and searching the remainder that we will get the expected video in the results.
-				for result in search_results:
-					video_title=result.find('a').find("img").get("alt")
-					self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
-					video_url=result.find('a').get('href')
-					self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)
-					# Check the alt tag which includes the full title with special characters against the video title. If we match we nominate the result as the proper metadata. If we don't match we reply with a low score.
-					if video_title.lower() == file_name.lower():
-						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match: \'' + file_name.lower() + '\' == \'%s\'' % video_title.lower())
-						results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 100, lang = lang))
-					else:
-						score=score-1
-						results.Append(MetadataSearchResult(id = video_url, name = video_title, score = score, lang = lang))
+				if search_results:
+					for result in search_results:
+						video_title=result.find('a').find("img").get("alt")
+						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
+						video_url=result.find('a').get('href')
+						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)
+						# Check the alt tag which includes the full title with special characters against the video title. If we match we nominate the result as the proper metadata. If we don't match we reply with a low score.
+						if video_title.lower() == file_name.lower():
+							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match: \'' + file_name.lower() + '\' == \'%s\'' % video_title.lower())
+							results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 100, lang = lang))
+						else:
+							score=score-1
+							results.Append(MetadataSearchResult(id = video_url, name = video_title, score = score, lang = lang))
+				else:
+					search_query="+".join(search_query_raw[-2:])
+					self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Search Query: %s' % search_query)
+					html=HTML.ElementFromURL(BASE_SEARCH_URL % search_query, sleep=REQUEST_DELAY)
+					search_results=html.xpath('//*[@class="video-gallery"]/li')
+					for result in search_results:
+						video_title=result.find('a').find("img").get("alt")
+						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
+						video_url=result.find('a').get('href')
+						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)
+						if video_title.lower() == file_name.lower():
+							results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 100, lang = lang))
+						else:
+							score=score-1
+							results.Append(MetadataSearchResult(id = video_url, name = video_title, score = score, lang = lang))
 
 	def update(self, metadata, media, lang, force=False):
 		self.Log(PLUGIN_LOG_TITLE + ' - UPDATE CALLED')

@@ -85,7 +85,7 @@ class HelixStudios(Agent.Movies):
 						video_url=result.find('a').get('href')
 						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)
 						# Check the alt tag which includes the full title with special characters against the video title. If we match we nominate the result as the proper metadata. If we don't match we reply with a low score.
-						video_title = re.sub("[\:\?\|]", '', video_title)
+						video_title = re.sub("[\:\?\|\#]", '', video_title)
 						video_title = re.sub("\s{2,4}", ' ', video_title)
 						if video_title.lower() == file_name.lower():
 							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match: \'' + file_name.lower() + '\' == \'%s\'' % video_title.lower())
@@ -105,7 +105,7 @@ class HelixStudios(Agent.Movies):
 							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
 							video_url=result.find('a').get('href')
 							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)
-							video_title = re.sub("[\:\?\|]", '', video_title)
+							video_title = re.sub("[\:\?\|\#]", '', video_title)
 							if video_title.lower() == file_name.lower():
 								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match: \'' + file_name.lower() + '\' == \'%s\'' % video_title.lower())
 								results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 100, lang = lang))
@@ -124,7 +124,7 @@ class HelixStudios(Agent.Movies):
 								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
 								video_url=result.find('a').get('href')
 								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)
-								video_title = re.sub("[\:\?\|]", '', video_title)
+								video_title = re.sub("[\:\?\|\#]", '', video_title)
 								if video_title.lower() == file_name.lower():
 									self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match: \'' + file_name.lower() + '\' == \'%s\'' % video_title.lower())
 									results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 100, lang = lang))

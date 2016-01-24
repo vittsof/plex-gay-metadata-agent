@@ -88,6 +88,7 @@ class HelixStudios(Agent.Movies):
 						if video_title.lower() == file_name.lower():
 							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match: \'' + file_name.lower() + '\' == \'%s\'' % video_title.lower())
 							results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 100, lang = lang))
+							return
 						else:
 							score=score-1
 							results.Append(MetadataSearchResult(id = video_url, name = video_title, score = score, lang = lang))
@@ -101,10 +102,13 @@ class HelixStudios(Agent.Movies):
 						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
 						video_url=result.find('a').get('href')
 						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)
+						video_title = re.sub("[\:\?]", '', video_title)
 						if video_title.lower() == file_name.lower():
+							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match: \'' + file_name.lower() + '\' == \'%s\'' % video_title.lower())
 							results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 100, lang = lang))
+							return
 						else:
-							score=score-1
+							score=1
 							results.Append(MetadataSearchResult(id = video_url, name = video_title, score = score, lang = lang))
 
 	def update(self, metadata, media, lang, force=False):

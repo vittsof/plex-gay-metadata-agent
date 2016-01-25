@@ -88,7 +88,7 @@ class HelixStudios(Agent.Movies):
 						video_title = re.sub("[\:\?\|\#]", '', video_title)
 						video_title = re.sub("\s{2,4}", ' ', video_title)
 						if video_title.lower() == file_name.lower():
-							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match: \'' + file_name.lower() + '\' == \'%s\'' % video_title.lower())
+							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match "' + file_name.lower() + '" == "%s"' % video_title.lower())
 							results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 100, lang = lang))
 							return
 						else:
@@ -107,7 +107,7 @@ class HelixStudios(Agent.Movies):
 							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)
 							video_title = re.sub("[\:\?\|\#]", '', video_title)
 							if video_title.lower() == file_name.lower():
-								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match: \'' + file_name.lower() + '\' == \'%s\'' % video_title.lower())
+								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match "' + file_name.lower() + '" == "%s"' % video_title.lower())
 								results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 100, lang = lang))
 								return
 							else:
@@ -126,7 +126,7 @@ class HelixStudios(Agent.Movies):
 								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)
 								video_title = re.sub("[\:\?\|\#]", '', video_title)
 								if video_title.lower() == file_name.lower():
-									self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match: \'' + file_name.lower() + '\' == \'%s\'' % video_title.lower())
+									self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match "' + file_name.lower() + '" == "%s"' % video_title.lower())
 									results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 100, lang = lang))
 									return
 								else:
@@ -221,6 +221,7 @@ class HelixStudios(Agent.Movies):
 			
 			html.xpath('//*[@id="main"]/div[1]/div[1]/div[2]/table/tbody/tr/td/p/text()')
 
+			metadata.content_rating = 'X'
 			metadata.posters.validate_keys(valid_image_names)
 			metadata.title = video_title
 			metadata.studio = "Helix Studios"

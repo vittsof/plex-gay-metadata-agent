@@ -1,8 +1,8 @@
 #Staxus
-import re, os, urllib
+import re, os, urllib, cgi
 PLUGIN_LOG_TITLE='Staxus'	# Log Title
 
-VERSION_NO = '2016.01.04.1'
+VERSION_NO = '2016.01.24.1'
 
 REQUEST_DELAY = 0					# Delay used when requesting HTML, may be good to have to prevent being banned from the site
 
@@ -58,14 +58,10 @@ class Staxus(Agent.Movies):
 
 				remove_words = file_name.lower()
 				remove_words = remove_words.replace('Staxus', '')
-				remove_words = re.sub('\(([^\)]+)\)', '', remove_words)
-				remove_words = remove_words.lstrip(' ')
-				remove_words = remove_words.rstrip(' ')
 				search_query_raw = list()
 				# Process the split filename to remove words with special characters. This is to attempt to find a match with the limited search function(doesn't process any non-alphanumeric characters correctly)
 				for piece in remove_words.split(' '):
-					if re.search('^[0-9A-Za-z]*$', piece.replace('!', '')) is not None:
-						search_query_raw.append(piece)
+					search_query_raw.append(cgi.escape(piece))
 				search_query="+".join(search_query_raw)
 				self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Search Query: %s' % search_query)
 				html=HTML.ElementFromURL(BASE_SEARCH_URL % search_query, sleep=REQUEST_DELAY)
@@ -81,9 +77,10 @@ class Staxus(Agent.Movies):
 					self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
 					# Check the alt tag which includes the full title with special characters against the video title. If we match we nominate the result as the proper metadata. If we don't match we reply with a low score.
 					if video_title is file_name:
-						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match' + file_name + '== %s' % video_title)
-						results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 100, lang = lang, sleep = REQUEST_DELAY))
+						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match "' + file_name + '" == "%s"' % video_title)
+						results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 100, lang = lang))
 					else:
+						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Title not found')
 						score=score-1
 						results.Append(MetadataSearchResult(id = video_url, name = video_title, score = score, lang = lang))
 
@@ -104,10 +101,6 @@ class Staxus(Agent.Movies):
 			
 			video_title = html.xpath('//div[@class="sidebar right sidebar-models"]/h2/text()')[0]
 			self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_title: "%s"' % video_title)
-			video_release_date = html.xpath('//div[@class="sidebar right sidebar-models"]/p[1]/span/text()')[0]
-			self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_release_date: "%s"' % video_release_date)
-			video_description = html.xpath('//div[@class="col-main"]/p/text()')
-			self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_description: "%s"' % video_description)
 
 			valid_image_names = list()
 			i = 0
@@ -115,9 +108,9 @@ class Staxus(Agent.Movies):
 			try:
 				for image in video_image_list:
 					thumb_url = image.get('src')
-					self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - thumb_url: "%s"' % thumb_url)
+					#self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - thumb_url: "%s"' % thumb_url)
 					poster_url = thumb_url.replace('300h', '1920w')
-					self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - poster_url: "%s"' % poster_url)
+					#self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - poster_url: "%s"' % poster_url)
 					valid_image_names.append(poster_url)
 					if poster_url not in metadata.posters:
 						try:
@@ -136,16 +129,21 @@ class Staxus(Agent.Movies):
 
 			# Try to get release date
 			try:
-				release_date=html.xpath('//div[@class="sidebar right sidebar-models"]/p[1]/span/text()').strip()
-				self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - Release Date - New: %s' % release_date)
-				metadata.originally_available_at = Datetime.ParseDate(release_date).date()
+				rd=html.xpath('//div[@class="sidebar right sidebar-models"]/p[1]/span/text()')[0]
+				rd = rd.split('/')
+				rd = [rd[i] for i in [1,0,2]]
+				rd[1] = rd[1] + ', '
+				rd[0] = rd[0] + " "
+				rd=''.join(rd)
+				self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - Release Date: %s' % rd)
+				metadata.originally_available_at = Datetime.ParseDate(rd).date()
 				metadata.year = metadata.originally_available_at.year
 			except: pass
 
 			# Try to get and process the video cast
 			try:
 				metadata.roles.clear()
-				htmlcast = html.xpath('//div[@class="sidebar right sidebar-models"]/p[5]/text()')[0].split(', ')
+				htmlcast = html.xpath('//div[@class="sidebar right sidebar-models"]/p[4]/a/text()')
 				self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - cast: "%s"' % htmlcast)
 				for cast in htmlcast:
 					cname = cast.strip()
@@ -172,10 +170,11 @@ class Staxus(Agent.Movies):
 				rating_count = rating_count.replace(')', '')
 				self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_rating: "%s"', rating)
 				self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_rating_count: "%s"', rating_count)
-				metadata.audience_rating = rating
-				metadata.rating_count = rating_count
+				metadata.rating = float(rating)*2
+				metadata.rating_count = int(rating_count)
 			except: pass
 
+			metadata.content_rating = 'X'
 			metadata.posters.validate_keys(valid_image_names)
 			metadata.title = video_title
 			metadata.studio = "Staxus"

@@ -84,14 +84,17 @@ class HelixStudios(Agent.Movies):
 						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
 						video_url=result.find('a').get('href')
 						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)
+						self.rating = result.find('.//*[@class="current-rating"]').text.strip('Currently ').strip('/5 Stars')
+						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - rating: %s' % self.rating)
 						# Check the alt tag which includes the full title with special characters against the video title. If we match we nominate the result as the proper metadata. If we don't match we reply with a low score.
-						video_title = re.sub("[\:\?\|\#]", '', video_title)
+						video_title = re.sub("[\:\?\|]", '', video_title)
 						video_title = re.sub("\s{2,4}", ' ', video_title)
 						if video_title.lower() == file_name.lower():
 							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match "' + file_name.lower() + '" == "%s"' % video_title.lower())
 							results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 100, lang = lang))
 							return
 						else:
+							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Title not found "' + file_name.lower() + '" != "%s"' % video_title.lower())
 							score=score-1
 							results.Append(MetadataSearchResult(id = video_url, name = video_title, score = score, lang = lang))
 				else:
@@ -105,12 +108,15 @@ class HelixStudios(Agent.Movies):
 							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
 							video_url=result.find('a').get('href')
 							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)
-							video_title = re.sub("[\:\?\|\#]", '', video_title)
+							self.rating = result.find('.//*[@class="current-rating"]').text.strip('Currently ').strip('/5 Stars')
+							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - rating: %s' % self.rating)
+							video_title = re.sub("[\:\?\|]", '', video_title)
 							if video_title.lower() == file_name.lower():
 								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match "' + file_name.lower() + '" == "%s"' % video_title.lower())
 								results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 100, lang = lang))
 								return
 							else:
+								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Title not found "' + file_name.lower() + '" != "%s"' % video_title.lower())
 								score=score-1
 								results.Append(MetadataSearchResult(id = video_url, name = video_title, score = score, lang = lang))
 					else:
@@ -124,19 +130,21 @@ class HelixStudios(Agent.Movies):
 								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
 								video_url=result.find('a').get('href')
 								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)
-								video_title = re.sub("[\:\?\|\#]", '', video_title)
+								self.rating = result.find('.//*[@class="current-rating"]').text.strip('Currently ').strip('/5 Stars')
+								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - rating: %s' % self.rating)
+								video_title = re.sub("[\:\?\|]", '', video_title)
 								if video_title.lower() == file_name.lower():
 									self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match "' + file_name.lower() + '" == "%s"' % video_title.lower())
 									results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 100, lang = lang))
 									return
 								else:
 									score=1
-									self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Title not found')
+									self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Title not found "' + file_name.lower() + '" != "%s"' % video_title.lower())
 									results.Append(MetadataSearchResult(id = video_url, name = video_title, score = score, lang = lang))
 						else:
 							score=1
-							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Title not found')
-							results.Append(MetadataSearchResult(id = video_url, name = video_title, score = score, lang = lang))
+							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Title not found "' + file_name.lower() + '" != "%s"' % video_title.lower())
+							return
 
 	def update(self, metadata, media, lang, force=False):
 		self.Log(PLUGIN_LOG_TITLE + ' - UPDATE CALLED')
@@ -167,17 +175,19 @@ class HelixStudios(Agent.Movies):
 			video_image_list = html.xpath('//*[@id="scene-just-gallery"]/a/img')
 			# self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_image_list: "%s"' % video_image_list)
 			try:
+				coverPrefs = Prefs['cover']
 				for image in video_image_list:
-					thumb_url = image.get('src')
-					# self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - thumb_url: "%s"' % thumb_url)
-					poster_url = thumb_url.replace('300h', '1920w')
-					# self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - poster_url: "%s"' % poster_url)
-					valid_image_names.append(poster_url)
-					if poster_url not in metadata.posters:
-						try:
-							i += 1
-							metadata.posters[poster_url]=Proxy.Preview(HTTP.Request(thumb_url), sort_order = i)
-						except: pass
+					if i != coverPrefs or coverPrefs == "all available":
+						thumb_url = image.get('src')
+						# self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - thumb_url: "%s"' % thumb_url)
+						poster_url = thumb_url.replace('300h', '1920w')
+						# self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - poster_url: "%s"' % poster_url)
+						valid_image_names.append(poster_url)
+						if poster_url not in metadata.posters:
+							try:
+								i += 1
+								metadata.posters[poster_url]=Proxy.Preview(HTTP.Request(thumb_url), sort_order = i)
+							except: pass
 			except: pass
 
 			# Try to get description text
@@ -218,9 +228,8 @@ class HelixStudios(Agent.Movies):
 					if (len(genre) > 0):
 						metadata.genres.add(genre)
 			except: pass
-			
-			html.xpath('//*[@id="main"]/div[1]/div[1]/div[2]/table/tbody/tr/td/p/text()')
 
+			metadata.rating = float(self.rating)*2
 			metadata.content_rating = 'X'
 			metadata.posters.validate_keys(valid_image_names)
 			metadata.title = video_title

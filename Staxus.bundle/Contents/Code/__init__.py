@@ -106,17 +106,19 @@ class Staxus(Agent.Movies):
 			i = 0
 			video_image_list = html.xpath('//*[@class="reset collection-images"]/li/a/img')
 			try:
+				coverPrefs = Prefs['cover']
 				for image in video_image_list:
-					thumb_url = image.get('src')
-					#self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - thumb_url: "%s"' % thumb_url)
-					poster_url = thumb_url.replace('300h', '1920w')
-					#self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - poster_url: "%s"' % poster_url)
-					valid_image_names.append(poster_url)
-					if poster_url not in metadata.posters:
-						try:
-							i += 1
-							metadata.posters[poster_url]=Proxy.Preview(HTTP.Request(thumb_url), sort_order = i)
-						except: pass
+					if i != coverPrefs or coverPrefs == "all available":
+						thumb_url = image.get('src')
+						#self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - thumb_url: "%s"' % thumb_url)
+						poster_url = thumb_url.replace('300h', '1920w')
+						#self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - poster_url: "%s"' % poster_url)
+						valid_image_names.append(poster_url)
+						if poster_url not in metadata.posters:
+							try:
+								i += 1
+								metadata.posters[poster_url]=Proxy.Preview(HTTP.Request(thumb_url), sort_order = i)
+							except: pass
 			except: pass
 
 			# Try to get description text

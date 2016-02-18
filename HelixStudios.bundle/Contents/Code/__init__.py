@@ -61,12 +61,12 @@ class HelixStudios(Agent.Movies):
 				self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - File Name: %s' % file_name)
 				self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Split File Name: %s' % file_name.split(' '))
 
-				remove_words = file_name.lower()
-				remove_words = remove_words.replace('helix studios', '')
-				remove_words = remove_words.replace('helixstudios', '')
-				remove_words = re.sub('\(([^\)]+)\)', '', remove_words)
-				remove_words = remove_words.lstrip(' ')
-				remove_words = remove_words.rstrip(' ')
+				remove_words = file_name.lower() #Sets string to lower.
+				remove_words = remove_words.replace('helix studios', '') #Removes word.
+				remove_words = remove_words.replace('helixstudios', '') #Removes word.
+				remove_words = re.sub('\(([^\)]+)\)', '', remove_words) #Removes anything inside of () and the () themselves
+				remove_words = remove_words.lstrip(' ') #Removes white spaces on the left end.
+				remove_words = remove_words.rstrip(' ') #Removes white spaces on the right end.
 				search_query_raw = list()
 				# Process the split filename to remove words with special characters. This is to attempt to find a match with the limited search function(doesn't process any non-alphanumeric characters correctly)
 				for piece in remove_words.split(' '):

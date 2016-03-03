@@ -34,10 +34,8 @@ https://github.com/iklier/plex-gay-metadata-agent/wiki
 		Video Naming: Text title or text of the title as displayed on Staxus website.
 
 	KNOWN ISSUES
-	- Limited ability to match titles with special characters in the name.
 	- Unable to get metadata for bonus material from other sites.
 	- Autoupdate may cause issues as it may cause a full metadata refresh when a new file is added.
-
-
+	
 <h1>NOTES</h1>
 All metadata is downloaded by the end users personal Plex Media Server instance and no metadata is embedded in the agent bundle itself.

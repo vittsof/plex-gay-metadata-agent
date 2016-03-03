@@ -2,7 +2,7 @@
 import re, os, urllib
 PLUGIN_LOG_TITLE='Helix Studios'	# Log Title
 
-VERSION_NO = '2016.01.24.1'
+VERSION_NO = '2016.03.03.1'
 
 REQUEST_DELAY = 0					# Delay used when requesting HTML, may be good to have to prevent being banned from the site
 
@@ -96,7 +96,7 @@ class HelixStudios(Agent.Movies):
 						else:
 							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Title not found "' + file_name.lower() + '" != "%s"' % video_title.lower())
 							score=score-1
-							results.Append(MetadataSearchResult(id = video_url, name = video_title, score = score, lang = lang))
+							results.Append(MetadataSearchResult(id = '', name = media.filename, score = score, lang = lang))
 				else:
 					search_query="+".join(search_query_raw[-2:])
 					self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Search Query: %s' % search_query)
@@ -118,7 +118,7 @@ class HelixStudios(Agent.Movies):
 							else:
 								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Title not found "' + file_name.lower() + '" != "%s"' % video_title.lower())
 								score=score-1
-								results.Append(MetadataSearchResult(id = video_url, name = video_title, score = score, lang = lang))
+								results.Append(MetadataSearchResult(id = '', name = media.filename, score = score, lang = lang))
 					else:
 						search_query="+".join(search_query_raw[:2])
 						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Search Query: %s' % search_query)
@@ -140,7 +140,7 @@ class HelixStudios(Agent.Movies):
 								else:
 									score=1
 									self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Title not found "' + file_name.lower() + '" != "%s"' % video_title.lower())
-									results.Append(MetadataSearchResult(id = video_url, name = video_title, score = score, lang = lang))
+									results.Append(MetadataSearchResult(id = '', name = media.filename, score = score, lang = lang))
 						else:
 							score=1
 							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Title not found "' + file_name.lower() + '" != "%s"' % video_title.lower())

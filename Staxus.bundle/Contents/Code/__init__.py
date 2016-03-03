@@ -2,7 +2,7 @@
 import re, os, urllib, cgi
 PLUGIN_LOG_TITLE='Staxus'	# Log Title
 
-VERSION_NO = '2016.01.24.1'
+VERSION_NO = '2016.03.03.1'
 
 REQUEST_DELAY = 0					# Delay used when requesting HTML, may be good to have to prevent being banned from the site
 
@@ -68,24 +68,28 @@ class Staxus(Agent.Movies):
 				search_query="+".join(search_query_raw)
 				self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Search Query: %s' % search_query)
 				html=HTML.ElementFromURL(BASE_SEARCH_URL % search_query, sleep=REQUEST_DELAY)
-				search_results=html.xpath('//*[@class="reset collection-listing Marea"]/li/div/a')
+				search_results=html.xpath('//*[@class="item"]')
 				score=10
+				self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - results size: %s' % len(search_results))
 				# Enumerate the search results looking for an exact match. The hope is that by eliminating special character words from the title and searching the remainder that we will get the expected video in the results.
 				for result in search_results:
-					video_url=result.get('href')
-					self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)
-					image_url=result.findall("img")[0].get("src")
-					self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - image url: %s' % image_url)
-					video_title=result.findall("img")[0].get("alt")
+					#result=result.find('')
+					video_title=result.findall("div/a/img")[0].get("alt")
+					video_title = video_title.lstrip(' ') #Removes white spaces on the left end.
+					video_title = video_title.rstrip(' ') #Removes white spaces on the right end.
 					self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
 					# Check the alt tag which includes the full title with special characters against the video title. If we match we nominate the result as the proper metadata. If we don't match we reply with a low score.
-					if video_title is file_name:
-						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match "' + file_name + '" == "%s"' % video_title)
+					if video_title.lower() == file_name.lower():
+						video_url=result.findall("div/a")[0].get('href')
+						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)
+						image_url=result.findall("div/a/img")[0].get("src")
+						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - image url: %s' % image_url)
+						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match "' + file_name.lower() + '" == "%s"' % video_title.lower())
 						results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 100, lang = lang))
 					else:
-						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Title not found')
+						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Title not found "' + file_name.lower() + '" != "%s"' % video_title.lower())
 						score=score-1
-						results.Append(MetadataSearchResult(id = video_url, name = video_title, score = score, lang = lang))
+						results.Append(MetadataSearchResult(id = '', name = media.filename, score = score, lang = lang))
 
 	def update(self, metadata, media, lang, force=False):
 		self.Log(PLUGIN_LOG_TITLE + ' - UPDATE CALLED')

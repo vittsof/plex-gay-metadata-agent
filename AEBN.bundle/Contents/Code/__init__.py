@@ -2,7 +2,7 @@
 import re, os, urllib, cgi
 PLUGIN_LOG_TITLE='AEBN'	# Log Title
 
-VERSION_NO = '2016.03.04.1'
+VERSION_NO = '2016.03.04.2'
 
 REQUEST_DELAY = 0					# Delay used when requesting HTML, may be good to have to prevent being banned from the site
 
@@ -66,6 +66,7 @@ class AEBN(Agent.Movies):
 					video_title=result.findall("div/a")[0].get("title")
 					video_title = video_title.lstrip(' ') #Removes white spaces on the left end.
 					video_title = video_title.rstrip(' ') #Removes white spaces on the right end.
+					video_title = video_title.replace(':', '')
 					self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
 					video_url=result.findall("div/a")[0].get('href')
 					self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)
@@ -81,6 +82,7 @@ class AEBN(Agent.Movies):
 					video_title=result.findall("div/a")[0].get("title")
 					video_title = video_title.lstrip(' ') #Removes white spaces on the left end.
 					video_title = video_title.rstrip(' ') #Removes white spaces on the right end.
+					video_title = video_title.replace(':', '')
 					self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
 					# Check the alt tag which includes the full title with special characters against the video title. If we match we nominate the result as the proper metadata. If we don't match we reply with a low score.
 					if video_title.lower() == file_name.lower():

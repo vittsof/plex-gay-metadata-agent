@@ -5,13 +5,12 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string>Staxus Studios</string>
+	<string>AEBN</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.plexapp.agents.staxustudios</string>
+	<string>com.plexapp.agents.aebn</string>
 	<key>PlexAgentAttributionText</key>
 	<string>
-		&lt;a href=&quot;https://github.com/iklier/plex-gay-metadata-agent&quot;&gt;CockPorn&lt;/a&gt; is a free adgent for Staxus.&lt;br/&gt;
-		A gay porn site featuring Twinks to Studs, Vanilla to Extreme.
+		&lt;a href=&quot;https://github.com/iklier/plex-gay-metadata-agent&quot;&gt;CockPorn&lt;/a&gt; is a free adgent for AEBN.&lt;br/&gt;
 	</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>

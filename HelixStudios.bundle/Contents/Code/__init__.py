@@ -2,7 +2,7 @@
 import re, os, urllib
 PLUGIN_LOG_TITLE='Helix Studios'	# Log Title
 
-VERSION_NO = '2016.03.03.1'
+VERSION_NO = '2016.03.04.1'
 
 REQUEST_DELAY = 0					# Delay used when requesting HTML, may be good to have to prevent being banned from the site
 
@@ -81,15 +81,15 @@ class HelixStudios(Agent.Movies):
 				if search_results:
 					for result in search_results:
 						video_title=result.find('a').find("img").get("alt")
-						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
-						video_url=result.find('a').get('href')
-						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)
-						self.rating = result.find('.//*[@class="current-rating"]').text.strip('Currently ').strip('/5 Stars')
-						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - rating: %s' % self.rating)
-						# Check the alt tag which includes the full title with special characters against the video title. If we match we nominate the result as the proper metadata. If we don't match we reply with a low score.
 						video_title = re.sub("[\:\?\|]", '', video_title)
 						video_title = re.sub("\s{2,4}", ' ', video_title)
+						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
+						# Check the alt tag which includes the full title with special characters against the video title. If we match we nominate the result as the proper metadata. If we don't match we reply with a low score.
 						if video_title.lower() == file_name.lower():
+							video_url=result.find('a').get('href')
+							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)
+							self.rating = result.find('.//*[@class="current-rating"]').text.strip('Currently ').strip('/5 Stars')
+							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - rating: %s' % self.rating)
 							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match "' + file_name.lower() + '" == "%s"' % video_title.lower())
 							results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 100, lang = lang))
 							return
@@ -105,13 +105,13 @@ class HelixStudios(Agent.Movies):
 					if search_results:
 						for result in search_results:
 							video_title=result.find('a').find("img").get("alt")
-							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
-							video_url=result.find('a').get('href')
-							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)
-							self.rating = result.find('.//*[@class="current-rating"]').text.strip('Currently ').strip('/5 Stars')
-							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - rating: %s' % self.rating)
 							video_title = re.sub("[\:\?\|]", '', video_title)
+							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
 							if video_title.lower() == file_name.lower():
+								video_url=result.find('a').get('href')
+								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)
+								self.rating = result.find('.//*[@class="current-rating"]').text.strip('Currently ').strip('/5 Stars')
+								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - rating: %s' % self.rating)
 								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match "' + file_name.lower() + '" == "%s"' % video_title.lower())
 								results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 100, lang = lang))
 								return
@@ -127,13 +127,13 @@ class HelixStudios(Agent.Movies):
 						if search_results:
 							for result in search_results:
 								video_title=result.find('a').find("img").get("alt")
-								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
-								video_url=result.find('a').get('href')
-								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)
-								self.rating = result.find('.//*[@class="current-rating"]').text.strip('Currently ').strip('/5 Stars')
-								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - rating: %s' % self.rating)
 								video_title = re.sub("[\:\?\|]", '', video_title)
+								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
 								if video_title.lower() == file_name.lower():
+									video_url=result.find('a').get('href')
+									self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)
+									self.rating = result.find('.//*[@class="current-rating"]').text.strip('Currently ').strip('/5 Stars')
+									self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - rating: %s' % self.rating)
 									self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match "' + file_name.lower() + '" == "%s"' % video_title.lower())
 									results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 100, lang = lang))
 									return

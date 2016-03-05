@@ -2,7 +2,7 @@
 import re, os, urllib
 PLUGIN_LOG_TITLE='Helix Studios'	# Log Title
 
-VERSION_NO = '2016.03.04.1'
+VERSION_NO = '2016.03.05.1'
 
 REQUEST_DELAY = 0					# Delay used when requesting HTML, may be good to have to prevent being banned from the site
 
@@ -80,9 +80,10 @@ class HelixStudios(Agent.Movies):
 				# Enumerate the search results looking for an exact match. The hope is that by eliminating special character words from the title and searching the remainder that we will get the expected video in the results.
 				if search_results:
 					for result in search_results:
-						video_title=result.find('a').find("img").get("alt")
+						video_title = result.find('a').find("img").get("alt")
 						video_title = re.sub("[\:\?\|]", '', video_title)
 						video_title = re.sub("\s{2,4}", ' ', video_title)
+						video_title = video_title.rstrip(' ')
 						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
 						# Check the alt tag which includes the full title with special characters against the video title. If we match we nominate the result as the proper metadata. If we don't match we reply with a low score.
 						if video_title.lower() == file_name.lower():
@@ -104,8 +105,9 @@ class HelixStudios(Agent.Movies):
 					search_results=html.xpath('//*[@class="video-gallery"]/li')
 					if search_results:
 						for result in search_results:
-							video_title=result.find('a').find("img").get("alt")
+							video_title = result.find('a').find("img").get("alt")
 							video_title = re.sub("[\:\?\|]", '', video_title)
+							video_title = video_title.rstrip(' ')
 							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
 							if video_title.lower() == file_name.lower():
 								video_url=result.find('a').get('href')
@@ -128,6 +130,7 @@ class HelixStudios(Agent.Movies):
 							for result in search_results:
 								video_title=result.find('a').find("img").get("alt")
 								video_title = re.sub("[\:\?\|]", '', video_title)
+								video_title = video_title.rstrip(' ')
 								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
 								if video_title.lower() == file_name.lower():
 									video_url=result.find('a').get('href')
@@ -138,9 +141,8 @@ class HelixStudios(Agent.Movies):
 									results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 100, lang = lang))
 									return
 								else:
-									score=1
 									self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Title not found "' + file_name.lower() + '" != "%s"' % video_title.lower())
-									results.Append(MetadataSearchResult(id = '', name = media.filename, score = score, lang = lang))
+									results.Append(MetadataSearchResult(id = '', name = media.filename, score = 1, lang = lang))
 						else:
 							score=1
 							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Title not found "' + file_name.lower() + '" != "%s"' % video_title.lower())

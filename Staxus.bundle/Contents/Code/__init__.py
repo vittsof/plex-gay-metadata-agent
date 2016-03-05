@@ -2,7 +2,7 @@
 import re, os, urllib, cgi
 PLUGIN_LOG_TITLE='Staxus'	# Log Title
 
-VERSION_NO = '2016.03.03.1'
+VERSION_NO = '2016.03.05.1'
 
 REQUEST_DELAY = 0					# Delay used when requesting HTML, may be good to have to prevent being banned from the site
 
@@ -15,7 +15,7 @@ BASE_VIDEO_DETAILS_URL='http://staxus.com/trial/%s'
 
 # Example Search URL: 
 # http://staxus.com/trial/search.php?query=Staxus+Classic%3A+BB+Skate+Rave+-+Scene+1+-+Remastered+in+HD
-BASE_SEARCH_URL='http://staxus.com/trial/search.php?query=%s'
+BASE_SEARCH_URL='http://staxus.com/trial/search.php?st=advanced&qall=%s'
 
 ENCLOSING_DIRECTORY_LIST=["Staxus"]
 
@@ -65,7 +65,7 @@ class Staxus(Agent.Movies):
 				# Process the split filename to remove words with special characters. This is to attempt to find a match with the limited search function(doesn't process any non-alphanumeric characters correctly)
 				for piece in remove_words.split(' '):
 					search_query_raw.append(cgi.escape(piece))
-				search_query="+".join(search_query_raw)
+				search_query="%2C+".join(search_query_raw)
 				self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Search Query: %s' % search_query)
 				html=HTML.ElementFromURL(BASE_SEARCH_URL % search_query, sleep=REQUEST_DELAY)
 				search_results=html.xpath('//*[@class="item"]')
@@ -79,7 +79,7 @@ class Staxus(Agent.Movies):
 					video_title = video_title.rstrip(' ') #Removes white spaces on the right end.
 					self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
 					# Check the alt tag which includes the full title with special characters against the video title. If we match we nominate the result as the proper metadata. If we don't match we reply with a low score.
-					if video_title.lower() == file_name.lower():
+					if video_title.lower().replace(':','') == file_name.lower():
 						video_url=result.findall("div/a")[0].get('href')
 						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)
 						image_url=result.findall("div/a/img")[0].get("src")

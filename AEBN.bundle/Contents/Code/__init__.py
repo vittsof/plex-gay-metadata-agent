@@ -2,7 +2,7 @@
 import re, os, urllib, cgi
 PLUGIN_LOG_TITLE='AEBN'	# Log Title
 
-VERSION_NO = '2016.03.04.2'
+VERSION_NO = '2016.03.05.1'
 
 REQUEST_DELAY = 0					# Delay used when requesting HTML, may be good to have to prevent being banned from the site
 
@@ -48,8 +48,10 @@ class AEBN(Agent.Movies):
 			remove_words = file_name.lower() #Sets string to lower.
 			remove_words = re.sub('\(([^\)]+)\)', '', remove_words) #Removes anything inside of () and the () themselves.
 			remove_words = remove_words.lstrip(' ') #Removes white spaces on the left end.
+			remove_words = remove_words.lstrip('- ') #Removes white spaces on the left end.
 			remove_words = remove_words.rstrip(' ') #Removes white spaces on the right end.
 			search_query_raw = list()
+			file_studio = file_name[file_name.find("(")+1:file_name.find(")")] #used in if statment for studio name
 			# Process the split filename to remove words with special characters. This is to attempt to find a match with the limited search function(doesn't process any non-alphanumeric characters correctly)
 			for piece in remove_words.split(' '):
 				search_query_raw.append(cgi.escape(piece))
@@ -57,23 +59,47 @@ class AEBN(Agent.Movies):
 			self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Search Query: %s' % search_query)
 			html=HTML.ElementFromURL(BASE_SEARCH_URL % search_query, sleep=REQUEST_DELAY)
 			score=10
-			search_results=html.xpath('//div[@class="component main100 exactMatch"]/div[2]/div/div/div[2]/div[@class="movie"]')
+			search_results=html.xpath('//div[@class="component main100 exactMatch"]/div[2]/div/div/div[2]')
 			# Enumerate the search results looking for an exact match. The hope is that by eliminating special character words from the title and searching the remainder that we will get the expected video in the results.
 			if len(search_results) > 0:
 				self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - results size: %s' % len(search_results))
 				for result in search_results:
-					#result=result.find('')
-					video_title=result.findall("div/a")[0].get("title")
-					video_title = video_title.lstrip(' ') #Removes white spaces on the left end.
-					video_title = video_title.rstrip(' ') #Removes white spaces on the right end.
-					video_title = video_title.replace(':', '')
-					self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
-					video_url=result.findall("div/a")[0].get('href')
-					self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)
-					image_url=result.findall("div/a/img")[0].get("src")
-					self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - image url: %s' % image_url)
-					self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match "' + file_name.lower() + '" == "%s"' % video_title.lower())
-					results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 100, lang = lang))
+					
+					if file_name.find("(") == 0:
+						try:
+							studios = result.findall('div[@class="movieDetails"]/div[3]/div[2]/a')
+							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - studios: %s' % len(studios))
+						except: 
+							studios = 'empty'
+						pass
+						for studio in studios:
+							if studio.text.lower() == file_studio.lower():
+								#result=result.find('')
+								video_title = result.findall('div[@class="movie"]/div/a')[0].get("title")
+								video_title = video_title.lstrip(' ') #Removes white spaces on the left end.
+								video_title = video_title.rstrip(' ') #Removes white spaces on the right end.
+								video_title = video_title.replace(':', '')
+								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
+								video_url=result.findall('div[@class="movie"]/div/a')[0].get('href')
+								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)
+								image_url=result.findall('div[@class="movie"]/div/a/img')[0].get("src")
+								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - image url: %s' % image_url)
+								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match "' + remove_words.lower() + '" == "%s"' % video_title.lower())
+								results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 100, lang = lang))
+								return
+					else:
+							video_title = result.findall('div[@class="movie"]/div/a')[0].get("title")
+							video_title = video_title.lstrip(' ') #Removes white spaces on the left end.
+							video_title = video_title.rstrip(' ') #Removes white spaces on the right end.
+							video_title = video_title.replace(':', '')
+							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
+							video_url=result.findall('div[@class="movie"]/div/a')[0].get('href')
+							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)
+							image_url=result.findall('div[@class="movie"]/div/a/img')[0].get("src")
+							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - image url: %s' % image_url)
+							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match "' + remove_words.lower() + '" == "%s"' % video_title.lower())
+							results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 100, lang = lang))
+							return
 			else:
 				search_results=html.xpath('//*[@class="movie"]')
 				self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - results size: %s' % len(search_results))
@@ -85,12 +111,12 @@ class AEBN(Agent.Movies):
 					video_title = video_title.replace(':', '')
 					self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
 					# Check the alt tag which includes the full title with special characters against the video title. If we match we nominate the result as the proper metadata. If we don't match we reply with a low score.
-					if video_title.lower() == file_name.lower():
+					if video_title.lower() == remove_words.lower():
 						video_url=result.findall("div/a")[0].get('href')
 						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)
 						image_url=result.findall("div/a/img")[0].get("src")
 						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - image url: %s' % image_url)
-						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match "' + file_name.lower() + '" == "%s"' % video_title.lower())
+						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match "' + remove_words.lower() + '" == "%s"' % video_title.lower())
 						results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 98, lang = lang))
 						return
 					else:

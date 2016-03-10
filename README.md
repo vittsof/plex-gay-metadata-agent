@@ -18,6 +18,19 @@ A Plex agent for fetching gay adult video metadata. https://forums.plex.tv/discu
 More documentation can be found in the <a href="https://github.com/iklier/plex-gay-metadata-agent/wiki">wiki</a>.<br />
 https://github.com/iklier/plex-gay-metadata-agent/wiki
 
+<h1>AEBN.bundle</h1>
+	NAMING CONVENTION:
+		Enclosing directory: Any
+		Video Naming: Text title or text of the title as displayed on AEBN website.
+
+		If multiple titles from different studios.
+			(Studio name) - title.extention
+		Else you can just use.
+			tite.extention
+
+	KNOWN ISSUES
+	- Autoupdate may cause issues as it may cause a full metadata refresh when a new file is added.
+
 <h1>HelixStudios.bundle</h1>
 	NAMING CONVENTION:
 		Enclosing directory: Any folder that starts with "Helix"
@@ -36,6 +49,6 @@ https://github.com/iklier/plex-gay-metadata-agent/wiki
 	KNOWN ISSUES
 	- Unable to get metadata for bonus material from other sites.
 	- Autoupdate may cause issues as it may cause a full metadata refresh when a new file is added.
-	
+
 <h1>NOTES</h1>
 All metadata is downloaded by the end users personal Plex Media Server instance and no metadata is embedded in the agent bundle itself.

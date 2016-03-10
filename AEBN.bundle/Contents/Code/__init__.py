@@ -2,7 +2,7 @@
 import re, os, urllib, cgi
 PLUGIN_LOG_TITLE='AEBN'	# Log Title
 
-VERSION_NO = '2016.03.05.1'
+VERSION_NO = '2016.03.10.1'
 
 REQUEST_DELAY = 0					# Delay used when requesting HTML, may be good to have to prevent being banned from the site
 
@@ -41,28 +41,36 @@ class AEBN(Agent.Movies):
 			self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - File Path: %s' % path_and_file)
 			path_and_file = os.path.splitext(path_and_file)[0]
 			enclosing_directory, file_name = os.path.split(path_and_file)
-			
 			self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - File Name: %s' % file_name)
-			self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Split File Name: %s' % file_name.split(' '))
-
 			remove_words = file_name.lower() #Sets string to lower.
-			remove_words = re.sub('\(([^\)]+)\)', '', remove_words) #Removes anything inside of () and the () themselves.
-			remove_words = remove_words.lstrip(' ') #Removes white spaces on the left end.
-			remove_words = remove_words.lstrip('- ') #Removes white spaces on the left end.
-			remove_words = remove_words.rstrip(' ') #Removes white spaces on the right end.
 			search_query_raw = list()
 			file_studio = file_name[file_name.find("(")+1:file_name.find(")")] #used in if statment for studio name
-			# Process the split filename to remove words with special characters. This is to attempt to find a match with the limited search function(doesn't process any non-alphanumeric characters correctly)
-			for piece in remove_words.split(' '):
-				search_query_raw.append(cgi.escape(piece))
+			if remove_words.find("scene") > 0:
+				self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - This is a scene: True')
+				movie = remove_words.split("scene",1)[0]
+				scene = remove_words.split("scene",1)[1]
+				self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Movie: %s' % movie)
+				self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Scene: %s' % scene)
+				for piece in movie.split(' '):
+					search_query_raw.append(cgi.escape(piece))
+			else:
+				self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - This is a scene: False')
+				remove_words = re.sub('\(([^\)]+)\)', '', remove_words) #Removes anything inside of () and the () themselves.
+				remove_words = remove_words.lstrip(' ') #Removes white spaces on the left end.
+				remove_words = remove_words.lstrip('- ') #Removes white spaces on the left end.
+				remove_words = remove_words.rstrip(' ') #Removes white spaces on the right end.
+				self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Split File Name: %s' % remove_words.split(' '))
+				for piece in remove_words.split(' '):
+					search_query_raw.append(cgi.escape(piece))
 			search_query="+".join(search_query_raw)
 			self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Search Query: %s' % search_query)
 			html=HTML.ElementFromURL(BASE_SEARCH_URL % search_query, sleep=REQUEST_DELAY)
 			score=10
 			search_results=html.xpath('//div[@class="component main100 exactMatch"]/div[2]/div/div/div[2]')
+
 			# Enumerate the search results looking for an exact match. The hope is that by eliminating special character words from the title and searching the remainder that we will get the expected video in the results.
 			if len(search_results) > 0:
-				self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - results size: %s' % len(search_results))
+				self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - results size exact match: %s' % len(search_results))
 				for result in search_results:
 					
 					if file_name.find("(") == 0:
@@ -73,12 +81,11 @@ class AEBN(Agent.Movies):
 							studios = 'empty'
 						pass
 						for studio in studios:
-							if studio.text.lower() == file_studio.lower():
-								#result=result.find('')
-								video_title = result.findall('div[@class="movie"]/div/a')[0].get("title")
-								video_title = video_title.lstrip(' ') #Removes white spaces on the left end.
-								video_title = video_title.rstrip(' ') #Removes white spaces on the right end.
-								video_title = video_title.replace(':', '')
+							video_title = result.findall('div[@class="movie"]/div/a')[0].get("title")
+							video_title = video_title.lstrip(' ') #Removes white spaces on the left end.
+							video_title = video_title.rstrip(' ') #Removes white spaces on the right end.
+							video_title = video_title.replace(':', '')
+							if studio.text.lower() == file_studio.lower() and video_title.lower() == remove_words.lower():
 								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
 								video_url=result.findall('div[@class="movie"]/div/a')[0].get('href')
 								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)
@@ -88,10 +95,11 @@ class AEBN(Agent.Movies):
 								results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 100, lang = lang))
 								return
 					else:
-							video_title = result.findall('div[@class="movie"]/div/a')[0].get("title")
-							video_title = video_title.lstrip(' ') #Removes white spaces on the left end.
-							video_title = video_title.rstrip(' ') #Removes white spaces on the right end.
-							video_title = video_title.replace(':', '')
+						video_title = result.findall('div[@class="movie"]/div/a')[0].get("title")
+						video_title = video_title.lstrip(' ') #Removes white spaces on the left end.
+						video_title = video_title.rstrip(' ') #Removes white spaces on the right end.
+						video_title = video_title.replace(':', '')
+						if video_title.lower() == remove_words.lower():
 							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
 							video_url=result.findall('div[@class="movie"]/div/a')[0].get('href')
 							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)

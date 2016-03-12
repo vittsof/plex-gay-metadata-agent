@@ -2,7 +2,7 @@
 import re, os, urllib, cgi
 PLUGIN_LOG_TITLE='AEBN'	# Log Title
 
-VERSION_NO = '2016.03.10.1'
+VERSION_NO = '2016.03.11.1'
 
 REQUEST_DELAY = 0					# Delay used when requesting HTML, may be good to have to prevent being banned from the site
 
@@ -42,26 +42,26 @@ class AEBN(Agent.Movies):
 			path_and_file = os.path.splitext(path_and_file)[0]
 			enclosing_directory, file_name = os.path.split(path_and_file)
 			self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - File Name: %s' % file_name)
-			remove_words = file_name.lower() #Sets string to lower.
+			file_name = file_name.lower() #Sets string to lower.
 			search_query_raw = list()
-			file_studio = file_name[file_name.find("(")+1:file_name.find(")")] #used in if statment for studio name
-			if remove_words.find("scene") > 0:
+			if file_name.find("scene") > 0:
 				self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - This is a scene: True')
-				movie = remove_words.split("scene",1)[0]
-				scene = remove_words.split("scene",1)[1]
-				self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Movie: %s' % movie)
+				scene = file_name.split("scene",1)[1].lstrip(' ')
+				file_name = file_name.split("scene",1)[0].rstrip(' ')
+				self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Movie: %s' % file_name)
 				self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Scene: %s' % scene)
-				for piece in movie.split(' '):
+				for piece in file_name.split(' '):
 					search_query_raw.append(cgi.escape(piece))
 			else:
 				self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - This is a scene: False')
-				remove_words = re.sub('\(([^\)]+)\)', '', remove_words) #Removes anything inside of () and the () themselves.
-				remove_words = remove_words.lstrip(' ') #Removes white spaces on the left end.
-				remove_words = remove_words.lstrip('- ') #Removes white spaces on the left end.
-				remove_words = remove_words.rstrip(' ') #Removes white spaces on the right end.
-				self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Split File Name: %s' % remove_words.split(' '))
-				for piece in remove_words.split(' '):
+				file_name = re.sub('\(([^\)]+)\)', '', file_name) #Removes anything inside of () and the () themselves.
+				file_name = file_name.lstrip(' ') #Removes white spaces on the left end.
+				file_name = file_name.lstrip('- ') #Removes white spaces on the left end.
+				file_name = file_name.rstrip(' ') #Removes white spaces on the right end.
+				self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Split File Name: %s' % file_name.split(' '))
+				for piece in file_name.split(' '):
 					search_query_raw.append(cgi.escape(piece))
+			file_studio = file_name[file_name.find("(")+1:file_name.find(")")] #used in if statment for studio name
 			search_query="+".join(search_query_raw)
 			self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Search Query: %s' % search_query)
 			html=HTML.ElementFromURL(BASE_SEARCH_URL % search_query, sleep=REQUEST_DELAY)
@@ -72,7 +72,6 @@ class AEBN(Agent.Movies):
 			if len(search_results) > 0:
 				self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - results size exact match: %s' % len(search_results))
 				for result in search_results:
-					
 					if file_name.find("(") == 0:
 						try:
 							studios = result.findall('div[@class="movieDetails"]/div[3]/div[2]/a')
@@ -85,13 +84,13 @@ class AEBN(Agent.Movies):
 							video_title = video_title.lstrip(' ') #Removes white spaces on the left end.
 							video_title = video_title.rstrip(' ') #Removes white spaces on the right end.
 							video_title = video_title.replace(':', '')
-							if studio.text.lower() == file_studio.lower() and video_title.lower() == remove_words.lower():
+							if studio.text.lower() == file_studio.lower() and video_title.lower() == file_name.lower():
 								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
 								video_url=result.findall('div[@class="movie"]/div/a')[0].get('href')
 								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)
 								image_url=result.findall('div[@class="movie"]/div/a/img')[0].get("src")
 								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - image url: %s' % image_url)
-								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match "' + remove_words.lower() + '" == "%s"' % video_title.lower())
+								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match "' + file_name.lower() + '" == "%s"' % video_title.lower())
 								results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 100, lang = lang))
 								return
 					else:
@@ -99,13 +98,13 @@ class AEBN(Agent.Movies):
 						video_title = video_title.lstrip(' ') #Removes white spaces on the left end.
 						video_title = video_title.rstrip(' ') #Removes white spaces on the right end.
 						video_title = video_title.replace(':', '')
-						if video_title.lower() == remove_words.lower():
+						if video_title.lower() == file_name.lower():
 							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
 							video_url=result.findall('div[@class="movie"]/div/a')[0].get('href')
 							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)
 							image_url=result.findall('div[@class="movie"]/div/a/img')[0].get("src")
 							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - image url: %s' % image_url)
-							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match "' + remove_words.lower() + '" == "%s"' % video_title.lower())
+							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match "' + file_name.lower() + '" == "%s"' % video_title.lower())
 							results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 100, lang = lang))
 							return
 			else:
@@ -119,12 +118,12 @@ class AEBN(Agent.Movies):
 					video_title = video_title.replace(':', '')
 					self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
 					# Check the alt tag which includes the full title with special characters against the video title. If we match we nominate the result as the proper metadata. If we don't match we reply with a low score.
-					if video_title.lower() == remove_words.lower():
+					if video_title.lower() == file_name.lower():
 						video_url=result.findall("div/a")[0].get('href')
 						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)
 						image_url=result.findall("div/a/img")[0].get("src")
 						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - image url: %s' % image_url)
-						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match "' + remove_words.lower() + '" == "%s"' % video_title.lower())
+						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match "' + file_name.lower() + '" == "%s"' % video_title.lower())
 						results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 98, lang = lang))
 						return
 					else:
@@ -135,21 +134,54 @@ class AEBN(Agent.Movies):
 	def update(self, metadata, media, lang, force=False):
 		self.Log(PLUGIN_LOG_TITLE + ' - UPDATE CALLED')
 
+		enclosing_directory, file_name = os.path.split(os.path.splitext(media.items[0].parts[0].file)[0])
+		file_name = file_name.lower()
+
 		if media.items[0].parts[0].file is not None:
 			file_path = media.items[0].parts[0].file
 			self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - File Path: %s' % file_path)
 			self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - metadata.id: %s' % metadata.id)
 			url = BASE_VIDEO_DETAILS_URL % metadata.id
 
-			# Fetch HTML
+			# Fetch HTML.
 			html = HTML.ElementFromURL(url, sleep=REQUEST_DELAY)	
 
-			# Set tagline to URL
+			# Set tagline to URL.
 			metadata.tagline = url
-			
-			video_title = html.xpath('//div[@class="componentHeader"]/h1/text()')[0]
-			self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_title: "%s"' % video_title)
-			
+			# Set video title.
+			def title(self, html, file_name):
+				video_title = [0, 1]
+				if file_name.find("scene") > 0:
+					video_titles = html.xpath('//div[@class="movieDetailsSceneResults"]/div/div[1]/div[@class="title"]/text()')
+					if video_titles > 0:
+						i = 0
+						for temp in video_titles:
+							video_titles[i] = temp.rstrip().replace(":","")
+							i += 1
+
+						video_titles = filter(None, video_titles)
+						self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - Number of Scenes: "%s"' % len(video_titles))
+						i = 0
+						for temp in video_titles:
+							i += 1
+							if temp.lower() == file_name.lower():
+								video_title[0] = temp
+								video_title[1] = i
+								self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - Scene found in list: "%s"' %temp.lower() + ' == "%s"' %file_name.lower())
+								return video_title;
+							else:
+								video_title[0] = html.xpath('//div[@class="componentHeader"]/h1/text()')[0]
+								self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - Scene not found in list: "%s"' %temp.lower() + ' != "%s"' %file_name.lower())
+					else:
+						video_title[0] = html.xpath('//div[@class="componentHeader"]/h1/text()')[0]
+						self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - Scene not found in list')
+				else:
+					video_title[0] = html.xpath('//div[@class="componentHeader"]/h1/text()')[0]
+				return video_title;
+				
+			video_title = title(self, html, file_name)
+			self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_title: "%s"' % video_title[0])
+
 			# Try to get and process the director text.
 			valid_image_names = list()
 			i = 0
@@ -183,41 +215,28 @@ class AEBN(Agent.Movies):
 				metadata.year = metadata.originally_available_at.year
 			except: pass
 			
-			# Try to get and process the video cast.
-			try:
-				metadata.roles.clear()
-				htmlcast = html.xpath('//div[@class="md-detailsStars"]/div/div[1]/a/span/text()')
-				htmlcast1 = html.xpath('//div[@class="md-detailsStars"]/div/div[2]/a/span/text()')
-				if len(htmlcast1) > 0:
-					self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - cast: "%s"' % htmlcast1)
-					for cast in htmlcast1:
-						cname = cast.strip()
-						if (len(cname) > 0):
-							role = metadata.roles.new()
-							role.actor = cname
-				else:
-					self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - cast: "%s"' % htmlcast)
-					for cast in htmlcast:
-						cname = cast.strip()
-						if (len(cname) > 0):
-							role = metadata.roles.new()
-							role.actor = cname
-			except: pass
-			
-			genres = html.xpath('//div[@class="md-detailsCategories"]/span[2]/a/text()')
-			self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_genres: "%s"' % len(genres))
-				
 			# Try to get and process the video genres.
 			try:
 				metadata.genres.clear()
-				genres = html.xpath('//div[@class="md-detailsCategories"]/span[2]/a/text()')
-				self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_genres: "%s"' % genres)
-				for genre in genres:
-					genre = genre.strip()
-					if (len(genre) > 0):
-						metadata.genres.add(genre)
+				if file_name.find("scene") > 0 and file_name.lower() == video_title[0].lower():
+					path = '//div[@class="movieDetailsSceneResults"]/div['+str(video_title[1])+']/div[2]/div[5]/div/div/div[2]/span[2]/a/text()'
+					genres = html.xpath(path)
+					self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_genres count from scene: "%s"' % len(genres))
+					self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_genres from scene: "%s"' % genres)
+					for genre in genres:
+						genre = genre.strip()
+						if (len(genre) > 0):
+							metadata.genres.add(genre)
+				else:
+					genres = html.xpath('//div[@class="md-detailsCategories"]/span[2]/a/text()')
+					self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_genres count from movie: "%s"' % len(genres))
+					self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_genres from movie: "%s"' % genres)
+					for genre in genres:
+						genre = genre.strip()
+						if (len(genre) > 0):
+							metadata.genres.add(genre)
 			except: pass
-			
+
 			# Crew.
 			# Try to get and process the director.
 			try:
@@ -226,7 +245,57 @@ class AEBN(Agent.Movies):
 				self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - director: "%s"', director)
 				metadata.directors.add(director)
 			except: pass
-			
+
+			# Try to get and process the video cast.
+			try:
+				metadata.roles.clear()
+				if file_name.find("scene") > 0 and file_name.lower() == video_title[0].lower():
+					path = '//div[@class="movieDetailsSceneResults"]/div['+str(video_title[1])+']/div[2]/div[5]/div/div/div[1]/span[2]/a/span/text()'
+					htmlcast = html.xpath(path)
+					self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - cast scene count: "%s"' % len(htmlcast))
+					if len(htmlcast) > 0:
+						self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - cast: "%s"' % htmlcast)
+						for cast in htmlcast:
+							cname = cast.strip()
+							if (len(cname) > 0):
+								role = metadata.roles.new()
+								role.actor = cname
+					else:
+						htmlcast = html.xpath('//div[@class="md-detailsStars"]/div/div[1]/a/span/text()')
+						htmlcast1 = html.xpath('//div[@class="md-detailsStars"]/div/div[2]/a/span/text()')
+						if len(htmlcast1) > 0:
+							self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - cast: "%s"' % htmlcast1)
+							for cast in htmlcast1:
+								cname = cast.strip()
+								if (len(cname) > 0):
+									role = metadata.roles.new()
+									role.actor = cname
+						else:
+							self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - cast: "%s"' % htmlcast)
+							for cast in htmlcast:
+								cname = cast.strip()
+								if (len(cname) > 0):
+									role = metadata.roles.new()
+									role.actor = cname
+				else:
+					htmlcast = html.xpath('//div[@class="md-detailsStars"]/div/div[1]/a/span/text()')
+					htmlcast1 = html.xpath('//div[@class="md-detailsStars"]/div/div[2]/a/span/text()')
+					if len(htmlcast1) > 0:
+						self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - cast: "%s"' % htmlcast1)
+						for cast in htmlcast1:
+							cname = cast.strip()
+							if (len(cname) > 0):
+								role = metadata.roles.new()
+								role.actor = cname
+					else:
+						self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - cast: "%s"' % htmlcast)
+						for cast in htmlcast:
+							cname = cast.strip()
+							if (len(cname) > 0):
+								role = metadata.roles.new()
+								role.actor = cname
+			except: pass
+
 			# Try to get and process the studio name.
 			try:
 				studio = html.xpath('//div[@class="md-detailsStudio"]/span[2]/a/text()')[0]
@@ -236,4 +305,4 @@ class AEBN(Agent.Movies):
 			
 			metadata.content_rating = 'X'
 			metadata.posters.validate_keys(valid_image_names)
-			metadata.title = video_title
+			metadata.title = video_title[0]

@@ -18,16 +18,20 @@ A Plex agent for fetching gay adult video metadata. https://forums.plex.tv/discu
 More documentation can be found in the <a href="https://github.com/iklier/plex-gay-metadata-agent/wiki">wiki</a>.<br />
 https://github.com/iklier/plex-gay-metadata-agent/wiki
 
+NONE OF THE FILENAMES FOR THE ADGENTS BELOW ARE CASE SENSITIVE.
+
 <h1>AEBN.bundle</h1>
 	NAMING CONVENTION:
 		Enclosing directory: Any
-		Video Naming: Text title or text of the title as displayed on AEBN website.
+		Video Naming: Text of the title as displayed on AEBN website. You can even have scenes for movies.
 
-		If multiple titles from different studios.
+		If multiple titles from different studios follow exact format below must have ().
 			(Studio name) - title.extention
 		Else you can just use.
 			tite.extention
 
+		If it is a scene include the word scene in the filename.
+			title scene 1
 	KNOWN ISSUES
 	- Autoupdate may cause issues as it may cause a full metadata refresh when a new file is added.
 
@@ -44,7 +48,7 @@ https://github.com/iklier/plex-gay-metadata-agent/wiki
 <h1>Staxus.bundle</h1>
 	NAMING CONVENTION:
 		Enclosing directory: "Staxus"
-		Video Naming: Text title or text of the title as displayed on Staxus website.
+		Video Naming: Partial title or text of the title as displayed on Staxus website.
 
 	KNOWN ISSUES
 	- Unable to get metadata for bonus material from other sites.

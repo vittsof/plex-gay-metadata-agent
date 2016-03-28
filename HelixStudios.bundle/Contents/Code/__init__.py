@@ -13,7 +13,7 @@ BASE_URL='https://www.helixstudios.net%s'
 # https://www.helixstudios.net/video/3437/hosing-him-down.html
 BASE_VIDEO_DETAILS_URL='https://www.helixstudios.net/video/%s'
 
-# Example Search URL: 
+# Example Search URL:
 # https://www.helixstudios.net/videos/?q=Hosing+Him+Down
 BASE_SEARCH_URL='https://www.helixstudios.net/videos/?q=%s'
 
@@ -158,18 +158,18 @@ class HelixStudios(Agent.Movies):
 			url = BASE_URL % metadata.id
 
 			# Fetch HTML
-			html = HTML.ElementFromURL(url, sleep=REQUEST_DELAY)	
+			html = HTML.ElementFromURL(url, sleep=REQUEST_DELAY)
 
 			# Set tagline to URL
 			metadata.tagline = url
-			
+
 			video_title = html.xpath('//div[@class="scene-title"]/span/text()')[0]
 			self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_title: "%s"' % video_title)
 			#video_release_date = html.xpath('//*[@id="main"]/div[1]/div[1]/div[2]/table/tr[1]/td[1]/text()')[1]
 			#self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_release_date: "%s"' % video_release_date)
 			#video_description = html.xpath('//*[@id="main"]/div[1]/div[1]/div[2]/table/tr/td/p/text()')
 			#self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_description: "%s"' % video_description)
-			
+
 			# External 	https://cdn.helixstudios.com/img/300h/media/stills/hx109_scene52_001.jpg
 			# Member 	https://cdn.helixstudios.com/img/250w/media/stills/hx109_scene52_001.jpg
 			valid_image_names = list()
@@ -219,7 +219,7 @@ class HelixStudios(Agent.Movies):
 						role = metadata.roles.new()
 						role.actor = cname
 			except: pass
-			
+
 			# Try to get and process the video genres
 			try:
 				metadata.genres.clear()

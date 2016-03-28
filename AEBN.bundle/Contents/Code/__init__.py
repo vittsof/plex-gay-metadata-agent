@@ -76,7 +76,7 @@ class AEBN(Agent.Movies):
 						try:
 							studios = result.findall('div[@class="movieDetails"]/div[3]/div[2]/a')
 							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - studios: %s' % len(studios))
-						except: 
+						except:
 							studios = 'empty'
 						pass
 						for studio in studios:
@@ -144,7 +144,7 @@ class AEBN(Agent.Movies):
 			url = BASE_VIDEO_DETAILS_URL % metadata.id
 
 			# Fetch HTML.
-			html = HTML.ElementFromURL(url, sleep=REQUEST_DELAY)	
+			html = HTML.ElementFromURL(url, sleep=REQUEST_DELAY)
 
 			# Set tagline to URL.
 			metadata.tagline = url
@@ -178,7 +178,7 @@ class AEBN(Agent.Movies):
 				else:
 					video_title[0] = html.xpath('//div[@class="componentHeader"]/h1/text()')[0]
 				return video_title;
-				
+
 			video_title = title(self, html, file_name)
 			self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_title: "%s"' % video_title[0])
 
@@ -198,7 +198,7 @@ class AEBN(Agent.Movies):
 						metadata.posters[poster_url]=Proxy.Preview(HTTP.Request(thumb_url), sort_order = i)
 					except: pass
 			except: pass
-			
+
 			# Try to get description text.
 			try:
 				raw_about_text=html.xpath('//span[@itemprop="about"]')
@@ -206,7 +206,7 @@ class AEBN(Agent.Movies):
 				about_text=' '.join(str(x.text_content().strip()) for x in raw_about_text)
 				metadata.summary=about_text
 			except: pass
-			
+
 			# Try to get and process the release date.
 			try:
 				rd=html.xpath('//span[@itemprop="datePublished"]/text()')[0]
@@ -214,7 +214,7 @@ class AEBN(Agent.Movies):
 				metadata.originally_available_at = Datetime.ParseDate(rd).date()
 				metadata.year = metadata.originally_available_at.year
 			except: pass
-			
+
 			# Try to get and process the video genres.
 			try:
 				metadata.genres.clear()
@@ -302,7 +302,7 @@ class AEBN(Agent.Movies):
 				self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - studio: "%s"', studio)
 				metadata.studio=studio
 			except: pass
-			
+
 			metadata.content_rating = 'X'
 			metadata.posters.validate_keys(valid_image_names)
 			metadata.title = video_title[0]

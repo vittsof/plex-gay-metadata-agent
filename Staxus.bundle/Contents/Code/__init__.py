@@ -1,10 +1,13 @@
 #Staxus
 import re, os, urllib, cgi
-PLUGIN_LOG_TITLE='Staxus'	# Log Title
+
+# Log Title
+PLUGIN_LOG_TITLE='Staxus'
 
 VERSION_NO = '2016.03.05.1'
 
-REQUEST_DELAY = 0					# Delay used when requesting HTML, may be good to have to prevent being banned from the site
+# Delay used when requesting HTML, may be good to have to prevent being banned from the site
+REQUEST_DELAY = 0
 
 # URLS
 BASE_URL='http://staxus.com%s'
@@ -13,7 +16,7 @@ BASE_URL='http://staxus.com%s'
 # http://staxus.com/trial/gallery.php?id=4044
 BASE_VIDEO_DETAILS_URL='http://staxus.com/trial/%s'
 
-# Example Search URL: 
+# Example Search URL:
 # http://staxus.com/trial/search.php?query=Staxus+Classic%3A+BB+Skate+Rave+-+Scene+1+-+Remastered+in+HD
 BASE_SEARCH_URL='http://staxus.com/trial/search.php?st=advanced&qall=%s'
 
@@ -101,11 +104,11 @@ class Staxus(Agent.Movies):
 			url = BASE_VIDEO_DETAILS_URL % metadata.id
 
 			# Fetch HTML
-			html = HTML.ElementFromURL(url, sleep=REQUEST_DELAY)	
+			html = HTML.ElementFromURL(url, sleep=REQUEST_DELAY)
 
 			# Set tagline to URL
 			metadata.tagline = url
-			
+
 			video_title = html.xpath('//div[@class="sidebar right sidebar-models"]/h2/text()')[0]
 			self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_title: "%s"' % video_title)
 
@@ -160,7 +163,7 @@ class Staxus(Agent.Movies):
 						role = metadata.roles.new()
 						role.actor = cname
 			except: pass
-			
+
 			# Try to get and process the video genres
 			try:
 				metadata.genres.clear()
@@ -171,7 +174,7 @@ class Staxus(Agent.Movies):
 					if (len(genre) > 0):
 						metadata.genres.add(genre)
 			except: pass
-			
+
 			try:
 				rating = html.xpath('//div[@class="col-md-4 col-xs-12 stats-single"]/b/text()')[0].strip()
 				rating_count = html.xpath('//div[@class="col-md-4 col-xs-12 stats-single"]//strong/text()')[0]

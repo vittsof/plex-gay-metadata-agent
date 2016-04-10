@@ -45,6 +45,20 @@ NONE OF THE FILENAMES FOR THE ADGENTS BELOW ARE CASE SENSITIVE.
 	- Unable to get metadata for bonus material from other sites.
 	- Autoupdate may cause issues as it may cause a full metadata refresh when a new file is added.
 
+<h1>SeanCody.bundle</h1>
+	NAMING CONVENTION:
+		- `sc{number} - {title}`, or
+		- `SeanCody - sc{number} - {title}`, or
+		- `Sean Cody - sc{number} - {title}`
+		Spaces around the dashes are optional, as is the sc before the number. This is configurable in the agent settings. At least the clip number and name are required as the free site URLs are constructed using this information.
+
+	KNOWN ISSUES
+	- Limited ability to match titles with special characters in the name.
+	- Unable to get metadata for bonus material from other sites.
+	- Autoupdate may cause issues as it may cause a full metadata refresh when a new file is added.
+	
+	By default, this matcher only runs on items in a directory named "Sean Cody". This is configurable in the agent settings.
+
 <h1>Staxus.bundle</h1>
 	NAMING CONVENTION:
 		Enclosing directory: "Staxus"

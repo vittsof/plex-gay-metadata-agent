@@ -2,7 +2,7 @@
 import re, os, urllib
 PLUGIN_LOG_TITLE='Helix Studios'	# Log Title
 
-VERSION_NO = '2016.03.05.1'
+VERSION_NO = '2016.04.10.1'
 
 REQUEST_DELAY = 0					# Delay used when requesting HTML, may be good to have to prevent being banned from the site
 
@@ -13,7 +13,7 @@ BASE_URL='https://www.helixstudios.net%s'
 # https://www.helixstudios.net/video/3437/hosing-him-down.html
 BASE_VIDEO_DETAILS_URL='https://www.helixstudios.net/video/%s'
 
-# Example Search URL: 
+# Example Search URL:
 # https://www.helixstudios.net/videos/?q=Hosing+Him+Down
 BASE_SEARCH_URL='https://www.helixstudios.net/videos/?q=%s'
 
@@ -36,30 +36,30 @@ class HelixStudios(Agent.Movies):
 
 	def Log(self, message, *args):
 		if Prefs['debug']:
-			Log(message, *args)
+			Log(PLUGIN_LOG_TITLE + ' - ' + message, *args)
 
 	def search(self, results, media, lang, manual):
 		self.Log('-----------------------------------------------------------------------')
-		self.Log(PLUGIN_LOG_TITLE + ' - SEARCH CALLED v.%s', VERSION_NO)
-		self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - media.title -  %s', media.title)
-		self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - media.items[0].parts[0].file -  %s', media.items[0].parts[0].file)
-		self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - media.primary_metadata.title -  %s', media.primary_metadata.title)
-		self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - media.items -  %s', media.items)
-		self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - media.filename -  %s', media.filename)
-		self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - lang -  %s', lang)
-		self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - manual -  %s', manual)
+		self.Log('SEARCH CALLED v.%s', VERSION_NO)
+		self.Log('SEARCH - media.title -  %s', media.title)
+		self.Log('SEARCH - media.items[0].parts[0].file -  %s', media.items[0].parts[0].file)
+		self.Log('SEARCH - media.primary_metadata.title -  %s', media.primary_metadata.title)
+		self.Log('SEARCH - media.items -  %s', media.items)
+		self.Log('SEARCH - media.filename -  %s', media.filename)
+		self.Log('SEARCH - lang -  %s', lang)
+		self.Log('SEARCH - manual -  %s', manual)
 
 		if media.items[0].parts[0].file is not None:
 			path_and_file = media.items[0].parts[0].file
-			self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - File Path: %s' % path_and_file)
+			self.Log('SEARCH - File Path: %s' % path_and_file)
 			path_and_file = os.path.splitext(path_and_file)[0]
 			enclosing_directory, file_name = os.path.split(path_and_file)
 			enclosing_directory, enclosing_folder = os.path.split(enclosing_directory)
-			self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Enclosing Folder: %s' % enclosing_folder[:5])
+			self.Log('SEARCH - Enclosing Folder: %s' % enclosing_folder[:5])
 			# Check if enclosing directory matches an element in the directory list.
 			if enclosing_folder[:5] in ENCLOSING_DIRECTORY_LIST:
-				self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - File Name: %s' % file_name)
-				self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Split File Name: %s' % file_name.split(' '))
+				self.Log('SEARCH - File Name: %s' % file_name)
+				self.Log('SEARCH - Split File Name: %s' % file_name.split(' '))
 
 				remove_words = file_name.lower() #Sets string to lower.
 				remove_words = remove_words.replace('helix studios', '') #Removes word.
@@ -73,7 +73,7 @@ class HelixStudios(Agent.Movies):
 					if re.search('^[0-9A-Za-z]*$', piece.replace('!', '')) is not None:
 						search_query_raw.append(piece)
 				search_query="+".join(search_query_raw)
-				self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Search Query: %s' % search_query)
+				self.Log('SEARCH - Search Query: %s' % search_query)
 				html=HTML.ElementFromURL(BASE_SEARCH_URL % search_query, sleep=REQUEST_DELAY)
 				search_results=html.xpath('//*[@class="video-gallery"]/li')
 				score=10
@@ -84,23 +84,23 @@ class HelixStudios(Agent.Movies):
 						video_title = re.sub("[\:\?\|]", '', video_title)
 						video_title = re.sub("\s{2,4}", ' ', video_title)
 						video_title = video_title.rstrip(' ')
-						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
+						self.Log('SEARCH - video title: %s' % video_title)
 						# Check the alt tag which includes the full title with special characters against the video title. If we match we nominate the result as the proper metadata. If we don't match we reply with a low score.
 						if video_title.lower() == file_name.lower():
 							video_url=result.find('a').get('href')
-							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)
+							self.Log('SEARCH - video url: %s' % video_url)
 							self.rating = result.find('.//*[@class="current-rating"]').text.strip('Currently ').strip('/5 Stars')
-							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - rating: %s' % self.rating)
-							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match "' + file_name.lower() + '" == "%s"' % video_title.lower())
+							self.Log('SEARCH - rating: %s' % self.rating)
+							self.Log('SEARCH - Exact Match "' + file_name.lower() + '" == "%s"' % video_title.lower())
 							results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 100, lang = lang))
 							return
 						else:
-							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Title not found "' + file_name.lower() + '" != "%s"' % video_title.lower())
+							self.Log('SEARCH - Title not found "' + file_name.lower() + '" != "%s"' % video_title.lower())
 							score=score-1
 							results.Append(MetadataSearchResult(id = '', name = media.filename, score = score, lang = lang))
 				else:
 					search_query="+".join(search_query_raw[-2:])
-					self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Search Query: %s' % search_query)
+					self.Log('SEARCH - Search Query: %s' % search_query)
 					html=HTML.ElementFromURL(BASE_SEARCH_URL % search_query, sleep=REQUEST_DELAY)
 					search_results=html.xpath('//*[@class="video-gallery"]/li')
 					if search_results:
@@ -108,22 +108,22 @@ class HelixStudios(Agent.Movies):
 							video_title = result.find('a').find("img").get("alt")
 							video_title = re.sub("[\:\?\|]", '', video_title)
 							video_title = video_title.rstrip(' ')
-							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
+							self.Log('SEARCH - video title: %s' % video_title)
 							if video_title.lower() == file_name.lower():
 								video_url=result.find('a').get('href')
-								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)
+								self.Log('SEARCH - video url: %s' % video_url)
 								self.rating = result.find('.//*[@class="current-rating"]').text.strip('Currently ').strip('/5 Stars')
-								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - rating: %s' % self.rating)
-								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match "' + file_name.lower() + '" == "%s"' % video_title.lower())
+								self.Log('SEARCH - rating: %s' % self.rating)
+								self.Log('SEARCH - Exact Match "' + file_name.lower() + '" == "%s"' % video_title.lower())
 								results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 100, lang = lang))
 								return
 							else:
-								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Title not found "' + file_name.lower() + '" != "%s"' % video_title.lower())
+								self.Log('SEARCH - Title not found "' + file_name.lower() + '" != "%s"' % video_title.lower())
 								score=score-1
 								results.Append(MetadataSearchResult(id = '', name = media.filename, score = score, lang = lang))
 					else:
 						search_query="+".join(search_query_raw[:2])
-						self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Search Query: %s' % search_query)
+						self.Log('SEARCH - Search Query: %s' % search_query)
 						html=HTML.ElementFromURL(BASE_SEARCH_URL % search_query, sleep=REQUEST_DELAY)
 						search_results=html.xpath('//*[@class="video-gallery"]/li')
 						if search_results:
@@ -131,105 +131,115 @@ class HelixStudios(Agent.Movies):
 								video_title=result.find('a').find("img").get("alt")
 								video_title = re.sub("[\:\?\|]", '', video_title)
 								video_title = video_title.rstrip(' ')
-								self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video title: %s' % video_title)
+								self.Log('SEARCH - video title: %s' % video_title)
 								if video_title.lower() == file_name.lower():
 									video_url=result.find('a').get('href')
-									self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - video url: %s' % video_url)
+									self.Log('SEARCH - video url: %s' % video_url)
 									self.rating = result.find('.//*[@class="current-rating"]').text.strip('Currently ').strip('/5 Stars')
-									self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - rating: %s' % self.rating)
-									self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Exact Match "' + file_name.lower() + '" == "%s"' % video_title.lower())
+									self.Log('SEARCH - rating: %s' % self.rating)
+									self.Log('SEARCH - Exact Match "' + file_name.lower() + '" == "%s"' % video_title.lower())
 									results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 100, lang = lang))
 									return
 								else:
-									self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Title not found "' + file_name.lower() + '" != "%s"' % video_title.lower())
+									self.Log('SEARCH - Title not found "' + file_name.lower() + '" != "%s"' % video_title.lower())
 									results.Append(MetadataSearchResult(id = '', name = media.filename, score = 1, lang = lang))
 						else:
 							score=1
-							self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - Title not found "' + file_name.lower() + '" != "%s"' % video_title.lower())
+							self.Log('SEARCH - Title not found "' + file_name.lower() + '" != "%s"' % video_title.lower())
 							return
 
 	def update(self, metadata, media, lang, force=False):
-		self.Log(PLUGIN_LOG_TITLE + ' - UPDATE CALLED')
+		self.Log('UPDATE CALLED')
 
 		if media.items[0].parts[0].file is not None:
 			file_path = media.items[0].parts[0].file
-			self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - File Path: %s' % file_path)
-			self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - metadata.id: %s' % metadata.id)
+			self.Log('UPDATE - File Path: %s' % file_path)
+			self.Log('UPDATE - metadata.id: %s' % metadata.id)
 			url = BASE_URL % metadata.id
 
 			# Fetch HTML
-			html = HTML.ElementFromURL(url, sleep=REQUEST_DELAY)	
+			html = HTML.ElementFromURL(url, sleep=REQUEST_DELAY)
 
 			# Set tagline to URL
 			metadata.tagline = url
-			
+
 			video_title = html.xpath('//div[@class="scene-title"]/span/text()')[0]
-			self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_title: "%s"' % video_title)
+			self.Log('UPDATE - video_title: "%s"' % video_title)
 			#video_release_date = html.xpath('//*[@id="main"]/div[1]/div[1]/div[2]/table/tr[1]/td[1]/text()')[1]
-			#self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_release_date: "%s"' % video_release_date)
+			#self.Log('UPDATE - video_release_date: "%s"' % video_release_date)
 			#video_description = html.xpath('//*[@id="main"]/div[1]/div[1]/div[2]/table/tr/td/p/text()')
-			#self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_description: "%s"' % video_description)
-			
+			#self.Log('UPDATE - video_description: "%s"' % video_description)
+
 			# External 	https://cdn.helixstudios.com/img/300h/media/stills/hx109_scene52_001.jpg
 			# Member 	https://cdn.helixstudios.com/img/250w/media/stills/hx109_scene52_001.jpg
 			valid_image_names = list()
 			i = 0
 			video_image_list = html.xpath('//*[@id="scene-just-gallery"]/a/img')
-			# self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_image_list: "%s"' % video_image_list)
+			# self.Log('UPDATE - video_image_list: "%s"' % video_image_list)
 			try:
 				coverPrefs = Prefs['cover']
 				for image in video_image_list:
 					if i != coverPrefs or coverPrefs == "all available":
 						thumb_url = image.get('src')
-						# self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - thumb_url: "%s"' % thumb_url)
+						# self.Log('UPDATE - thumb_url: "%s"' % thumb_url)
 						poster_url = thumb_url.replace('300h', '1920w')
-						# self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - poster_url: "%s"' % poster_url)
+						# self.Log('UPDATE - poster_url: "%s"' % poster_url)
 						valid_image_names.append(poster_url)
 						if poster_url not in metadata.posters:
 							try:
 								i += 1
 								metadata.posters[poster_url]=Proxy.Preview(HTTP.Request(thumb_url), sort_order = i)
 							except: pass
-			except: pass
+			except Exception as e: 
+				self.Log('UPDATE - Error getting posters: %s' % e)
+				pass
 
 			# Try to get description text
 			try:
 				raw_about_text=html.xpath('//*[@id="main"]/div[1]/div[1]/div[2]/table/tr/td/p')
-				self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - About Text - RAW %s', raw_about_text)
+				self.Log('UPDATE - About Text - RAW %s', raw_about_text)
 				about_text=' '.join(str(x.text_content().strip()) for x in raw_about_text)
 				metadata.summary=about_text
-			except: pass
+			except Exception as e: 
+				self.Log('UPDATE - Error getting description text: %s' % e)
+				pass
 
 			# Try to get release date
 			try:
 				release_date=html.xpath('//*[@id="main"]/div[1]/div[1]/div[2]/table/tr[1]/td[1]/text()')[1].strip()
-				self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - Release Date - New: %s' % release_date)
+				self.Log('UPDATE - Release Date - New: %s' % release_date)
 				metadata.originally_available_at = Datetime.ParseDate(release_date).date()
 				metadata.year = metadata.originally_available_at.year
-			except: pass
+			except Exception as e: 
+				self.Log('UPDATE - Error getting release date: %s' % e)
+				pass
 
 			# Try to get and process the video cast
 			try:
 				metadata.roles.clear()
 				htmlcast = html.xpath('//*[@id="main"]/div[1]/div[1]/div[2]/table/tr[3]/td/a/text()')
-				self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - cast: "%s"' % htmlcast)
+				self.Log('UPDATE - cast: "%s"' % htmlcast)
 				for cast in htmlcast:
 					cname = cast.strip()
 					if (len(cname) > 0):
 						role = metadata.roles.new()
 						role.actor = cname
-			except: pass
-			
+			except Exception as e: 
+				self.Log('UPDATE - Error getting video cast: %s' % e)
+				pass
+
 			# Try to get and process the video genres
 			try:
 				metadata.genres.clear()
 				genres = html.xpath('//*[@id="main"]/div[1]/div[1]/div[2]/table/tr[4]/td/a/text()')
-				self.Log(PLUGIN_LOG_TITLE + ' - UPDATE - video_genres: "%s"' % genres)
+				self.Log('UPDATE - video_genres: "%s"' % genres)
 				for genre in genres:
 					genre = genre.strip()
 					if (len(genre) > 0):
 						metadata.genres.add(genre)
-			except: pass
+			except Exception as e: 
+				self.Log('UPDATE - Error getting video genres: %s' % e)
+				pass
 
 			metadata.rating = float(self.rating)*2
 			metadata.content_rating = 'X'

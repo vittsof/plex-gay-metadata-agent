@@ -26,7 +26,7 @@ class CockPornAgent(Agent.Movies):
 		self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - media.title - %s', media.title)
 		results.Append(MetadataSearchResult(id=media.id, name=filename, score = 86, lang = lang))
 		self.Log(PLUGIN_LOG_TITLE + ' - SEARCH - %s', results)
-		
+
 
 	def update(self, metadata, media, lang):
 		self.Log(PLUGIN_LOG_TITLE + ' - UPDATE CALLED')
@@ -38,7 +38,7 @@ class CockPornAgent(Agent.Movies):
 
 		# # Look for local media.
 		# try: localmedia.findAssets(metadata, media.title, [path], 'movie', media.items[0].parts)
-		# except Exception, e: 
+		# except Exception, e:
 		# 	Log('Error finding media for movie %s: %s' % (media.title, str(e)))
 
 		# # Look for subtitles

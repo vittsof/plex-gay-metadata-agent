@@ -1,9 +1,9 @@
 [
 	{
-		"id": "debug",
-		"label": "Ouput debugging info in logs",
-		"type": "bool",
-		"default": "false"
+			"id": "folders",
+			"label": "Folders where these items might be found (comma-separated list)",
+			"type": "text",
+			"default": "Staxus"
 	},
 	{
         "id": "cover",
@@ -18,5 +18,11 @@
             "all available"
         ],
         "default": "5"
-    }
+    },
+		{
+			"id": "debug",
+			"label": "Ouput debugging info in logs",
+			"type": "bool",
+			"default": "false"
+		}
 ]

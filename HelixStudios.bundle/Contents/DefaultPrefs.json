@@ -1,9 +1,9 @@
 [
 	{
-		"id": "debug",
-		"label": "Ouput debugging info in logs",
-		"type": "bool",
-		"default": "false"
+			"id": "folders",
+			"label": "Folders where these items might be found (comma-separated list)",
+			"type": "text",
+			"default": "Helix"
 	},
 	{
         "id": "cover",
@@ -17,6 +17,12 @@
             "5",
             "all available"
         ],
-        "default": "5"
-    }
+        "default": "all available"
+    },
+		{
+			"id": "debug",
+			"label": "Ouput debugging info in logs",
+			"type": "bool",
+			"default": "false"
+		}
 ]

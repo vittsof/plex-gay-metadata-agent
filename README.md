@@ -37,7 +37,7 @@ NONE OF THE FILENAMES FOR THE ADGENTS BELOW ARE CASE SENSITIVE.
 
 <h1>HelixStudios.bundle</h1>
 	NAMING CONVENTION:
-		Enclosing directory: Any folder that starts with "Helix"
+		Enclosing directory: Can be defined in settings
 		Video Naming: Text title as displayed on Helix Studios website.
 
 	KNOWN ISSUES
@@ -47,6 +47,8 @@ NONE OF THE FILENAMES FOR THE ADGENTS BELOW ARE CASE SENSITIVE.
 
 <h1>SeanCody.bundle</h1>
 	NAMING CONVENTION:
+		Enclosing directory: Can be defined in settings
+		Video Naming:
 		- `sc{number} - {title}`, or
 		- `SeanCody - sc{number} - {title}`, or
 		- `Sean Cody - sc{number} - {title}`
@@ -56,12 +58,12 @@ NONE OF THE FILENAMES FOR THE ADGENTS BELOW ARE CASE SENSITIVE.
 	- Limited ability to match titles with special characters in the name.
 	- Unable to get metadata for bonus material from other sites.
 	- Autoupdate may cause issues as it may cause a full metadata refresh when a new file is added.
-	
+
 	By default, this matcher only runs on items in a directory named "Sean Cody". This is configurable in the agent settings.
 
 <h1>Staxus.bundle</h1>
 	NAMING CONVENTION:
-		Enclosing directory: "Staxus"
+		Enclosing directory: Can be defined in settings
 		Video Naming: Partial title or text of the title as displayed on Staxus website.
 
 	KNOWN ISSUES

@@ -3,7 +3,7 @@ import re, os, urllib, cgi
 
 PLUGIN_LOG_TITLE='AEBN'	# Log Title
 
-VERSION_NO = '2017.03.12.0'
+VERSION_NO = '2017.03.12.1'
 
 # Delay used when requesting HTML, may be good to have to prevent being
 # banned from the site
@@ -33,7 +33,7 @@ class AEBN(Agent.Movies):
 	def search(self, results, media, lang, manual):
 		self.Log('-----------------------------------------------------------------------')
 		self.Log('SEARCH CALLED v.%s', VERSION_NO)
-		self.Log('SEARCH - media.title -  %s', media.title)
+		self.Log("SEARCH - media.title -  %s", media.title)
 		self.Log('SEARCH - media.items[0].parts[0].file -  %s', media.items[0].parts[0].file)
 		self.Log('SEARCH - media.primary_metadata.title -  %s', media.primary_metadata.title)
 		self.Log('SEARCH - media.items -  %s', media.items)
@@ -89,6 +89,7 @@ class AEBN(Agent.Movies):
 					try:
 						studios = result.findall('div[@class="movieDetails"]/div[3]/div[2]/a')
 						self.Log('SEARCH - studios: %s' % len(studios))
+
 					except:
 						studios = 'empty'
 						self.Log('SEARCH - studios: Empty')
@@ -100,9 +101,13 @@ class AEBN(Agent.Movies):
 						video_title = video_title.replace(':', '')
 						if studio.text.lower() == file_studio.lower() and video_title.lower() == file_name.lower():
 							self.Log('SEARCH - video title: %s' % video_title)
-							video_url=result.findall('div[@class="movie"]/div/a')[0].get('href')
+							video_url = result.findall('div[@class="movie"]/div/a')[0].get('href')
+							if BASE_URL not in video_url:
+								video_url = BASE_URL + video_url
 							self.Log('SEARCH - video url: %s' % video_url)
-							image_url=result.findall('div[@class="movie"]/div/a/img')[0].get("src")
+							image_url = result.findall('div[@class="movie"]/div/a/img')[0].get("src")
+							if image_url[:2] == "//":
+								image_url = 'http:' + image_url
 							self.Log('SEARCH - image url: %s' % image_url)
 							self.Log('SEARCH - Exact Match "' + file_name.lower() + '" == "%s"' % video_title.lower())
 							self.Log('SEARCH - Studio Match "' + studio.text.lower() + '" == "%s"' % file_studio.lower())
@@ -115,9 +120,13 @@ class AEBN(Agent.Movies):
 					video_title = video_title.replace(':', '')
 					if video_title.lower() == file_name.lower():
 						self.Log('SEARCH - video title: %s' % video_title)
-						video_url=result.findall('div[@class="movie"]/div/a')[0].get('href')
+						video_url = result.findall('div[@class="movie"]/div/a')[0].get('href')
+						if BASE_URL not in video_url:
+							video_url = BASE_URL + video_url
 						self.Log('SEARCH - video url: %s' % video_url)
-						image_url=result.findall('div[@class="movie"]/div/a/img')[0].get("src")
+						image_url = result.findall('div[@class="movie"]/div/a/img')[0].get("src")
+						if image_url[:2] == "//":
+							image_url = 'http:' + image_url
 						self.Log('SEARCH - image url: %s' % image_url)
 						self.Log('SEARCH - Exact Match "' + file_name.lower() + '" == "%s"' % video_title.lower())
 						results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 100, lang = lang))
@@ -134,9 +143,13 @@ class AEBN(Agent.Movies):
 				self.Log('SEARCH - video title: %s' % video_title)
 				# Check the alt tag which includes the full title with special characters against the video title. If we match we nominate the result as the proper metadata. If we don't match we reply with a low score.
 				if video_title.lower() == file_name.lower():
-					video_url=result.findall("div/a")[0].get('href')
+					video_url = result.findall("div/a")[0].get('href')
+					if BASE_URL not in video_url:
+						video_url = BASE_URL + video_url
 					self.Log('SEARCH - video url: %s' % video_url)
-					image_url=result.findall("div/a/img")[0].get("src")
+					image_url = result.findall("div/a/img")[0].get("src")
+					if image_url[:2] == "//":
+						image_url = 'http:' + image_url
 					self.Log('SEARCH - image url: %s' % image_url)
 					self.Log('SEARCH - Exact Match "' + file_name.lower() + '" == "%s"' % video_title.lower())
 					results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 98, lang = lang))
@@ -158,7 +171,7 @@ class AEBN(Agent.Movies):
 		file_path = media.items[0].parts[0].file
 		self.Log('UPDATE - File Path: %s' % file_path)
 		self.Log('UPDATE - metadata.id: %s' % metadata.id)
-		url = BASE_VIDEO_DETAILS_URL % metadata.id
+		url = metadata.id
 
 		# Fetch HTML.
 		html = HTML.ElementFromURL(url, sleep=REQUEST_DELAY)
@@ -204,8 +217,12 @@ class AEBN(Agent.Movies):
 		image = html.xpath('//div[@id="md-boxCover"]/a/img')[0]
 		try:
 			thumb_url = image.get('src')
+			if thumb_url[:2] == "//":
+				thumb_url = 'http:' + thumb_url
+
 			self.Log('UPDATE - thumb_url: "%s"' % thumb_url)
 			poster_url = thumb_url.replace('160w', 'xlf')
+
 			self.Log('UPDATE - poster_url: "%s"' % poster_url)
 			valid_image_names.append(poster_url)
 			if poster_url not in metadata.posters:

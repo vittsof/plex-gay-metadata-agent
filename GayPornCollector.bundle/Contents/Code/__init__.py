@@ -255,5 +255,15 @@ class GayPornCollector(Agent.Movies):
 		except Exception as e:
 			self.Log('UPDATE - Error getting country name: %s' % e)
 			pass
+		# Try to get and process the country.
+		try:
+			metadata.collections.clear()
+			movie_name = results['related_porn_movie']
+			metadata.collections.add(movie_name)
+			self.Log('UPDATE - collections: "%s"', movie_name)
+		except Exception as e:
+			self.Log('UPDATE - Error getting collections name: %s' % e)
+			pass
+
 		metadata.art.validate_keys(valid_image_background_names)
 		metadata.posters.validate_keys(valid_image_poster_names)

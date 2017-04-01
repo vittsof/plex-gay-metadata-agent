@@ -3,7 +3,7 @@
 			"id": "folders",
 			"label": "Folders where these items might be found (comma-separated list)",
 			"type": "text",
-			"default": "Helix"
+			"default": "helix studios"
 	},
 	{
         "id": "cover",

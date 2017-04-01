@@ -3,7 +3,7 @@ import cookielib, cgi, re, os, json, urllib
 
 PLUGIN_LOG_TITLE='Gay Porn Collector'	# Log Title
 
-VERSION_NO = '2017.03.26.0'
+VERSION_NO = '2017.04.01.0'
 
 # Delay used when requesting HTML, may be good to have to prevent being
 # banned from the site
@@ -20,6 +20,9 @@ BASE_SEARCH_URL_MOVIES='http://www.gayporncollector.com/wp-json/milkshake/v2/por
 # http://www.gayporncollector.com/wp-json/milkshake/v2/pornscenes/?scene_title=Wet%20&%20Wild%20With%20Blake%20Mitchell
 BASE_SEARCH_URL_SCENES='http://www.gayporncollector.com/wp-json/milkshake/v2/pornscenes/'
 
+# http://www.gayporncollector.com/wp-json/milkshake/v2/pornscenes/3620
+BASE_SEARCH_URL_STARS='http://www.gayporncollector.com/wp-json/milkshake/v2/pornstars/'
+
 #replace # with %27 and ' with %23
 def Start():
 	HTTP.CacheTime = CACHE_1WEEK
@@ -30,12 +33,20 @@ def Start():
 class GayPornCollector(Agent.Movies):
 	name = 'Gay Porn Collector'
 	languages = [Locale.Language.NoLanguage, Locale.Language.English]
+	fallback_agent = False
 	primary_provider = False
 	contributes_to = ['com.plexapp.agents.cockporn']
 
 	def Log(self, message, *args):
 		if Prefs['debug']:
 			Log(PLUGIN_LOG_TITLE + ' - ' + message, *args)
+
+	def intTest(self, s):
+		try:
+			int(s)
+			return int(s)
+		except ValueError:
+			return False
 
 	def search(self, results, media, lang, manual):
 		self.Log('-----------------------------------------------------------------------')
@@ -47,6 +58,7 @@ class GayPornCollector(Agent.Movies):
 		self.Log('SEARCH - media.filename -  %s', media.filename)
 		self.Log('SEARCH - lang -  %s', lang)
 		self.Log('SEARCH - manual -  %s', manual)
+		self.Log('SEARCH - Prefs->cover -  %s', Prefs['cover'])
 
 		if not media.items[0].parts[0].file:
 			return
@@ -102,9 +114,6 @@ class GayPornCollector(Agent.Movies):
 
 	def update(self, metadata, media, lang, force=False):
 		self.Log('UPDATE CALLED')
-		enclosing_directory, file_name = os.path.split(os.path.splitext(media.items[0].parts[0].file)[0])
-		file_name = file_name.lower()
-
 		if not media.items[0].parts[0].file:
 			return
 
@@ -127,21 +136,32 @@ class GayPornCollector(Agent.Movies):
 		metadata.content_rating = 'X'
 
 		# Try to get and process the director posters.
-		valid_image_names = list()
+		valid_image_poster_names = list()
+		try:
+			self.Log('UPDATE - video_image_list: "%s"' % results['poster'])
+			poster_url = results['poster']['guid']
+			valid_image_poster_names.append(poster_url)
+			if poster_url not in metadata.posters:
+				metadata.posters[poster_url]=Proxy.Preview(HTTP.Request(poster_url))
+		except Exception as e:
+			self.Log('UPDATE - Error getting posters: %s' % e)
+			pass
+
+		# Try to get and process the background art.
+		valid_image_background_names = list()
 		try:
 			i = 0
 			video_image_list = results['gallery']
 			self.Log('UPDATE - video_image_list: "%s"' % video_image_list)
 			coverPrefs = Prefs['cover']
 			for image in video_image_list:
-				if i != coverPrefs or coverPrefs == "all available":
-					poster_url = results['gallery'][i]['guid']
-					self.Log('UPDATE - poster_url: "%s"' % poster_url)
-					valid_image_names.append(poster_url)
-					if poster_url not in metadata.posters:
+				if i <= (self.intTest(coverPrefs)-1) or coverPrefs == "all available":
+					i = i + 1
+					art_url = image['guid']
+					valid_image_background_names.append(art_url)
+					if art_url not in metadata.art:
 						try:
-							i += 1
-							metadata.posters[poster_url]=Proxy.Preview(HTTP.Request(poster_url), sort_order = i)
+							metadata.art[art_url]=Proxy.Preview(HTTP.Request(art_url), sort_order = i)
 						except: pass
 		except Exception as e:
 			self.Log('UPDATE - Error getting posters: %s' % e)
@@ -180,14 +200,14 @@ class GayPornCollector(Agent.Movies):
 
 		# Crew.
 		# Try to get and process the director.
-#		try:
-#			metadata.directors.clear()
-#			director = results['director']
-#			self.Log('UPDATE - director: "%s"', director)
-#			metadata.directors.add(director)
-#		except Exception as e:
-#			self.Log('UPDATE - Error getting director: %s' % e)
-#			pass
+		try:
+			metadata.directors.clear()
+			director = metadata.directors.new()
+			director.name = results['scene_director']
+			self.Log('UPDATE - director: "%s"', director)
+		except Exception as e:
+			self.Log('UPDATE - Error getting director: %s' % e)
+			pass
 
 		# Try to get and process the video cast.
 		try:
@@ -200,6 +220,19 @@ class GayPornCollector(Agent.Movies):
 					self.Log('UPDATE - cast: "%s"' % cname)
 					role = metadata.roles.new()
 					role.name = cname
+					try:
+						c_id = cast['porn_star_id']
+						self.Log('UPDATE - cast: "%s"' % c_id)
+						url = BASE_SEARCH_URL_STARS + c_id
+						# Fetch HTML.
+						response = urllib.urlopen(url)
+						star = json.loads(response.read())
+						role.photo = star['poster']['guid']
+						role.role = star['role']
+					except Exception as e:
+						self.Log('UPDATE - Error getting cast: %s' % e)
+						pass
+
 		except Exception as e:
 			self.Log('UPDATE - Error getting cast: %s' % e)
 			pass
@@ -213,4 +246,14 @@ class GayPornCollector(Agent.Movies):
 			self.Log('UPDATE - Error getting studio name: %s' % e)
 			pass
 
-		metadata.posters.validate_keys(valid_image_names)
+		# Try to get and process the country.
+		try:
+			metadata.countries.clear()
+			country_name = results['related_porn_studio'][0]['porn_studio_country']
+			metadata.countries.add(country_name)
+			self.Log('UPDATE - country: "%s"', country_name)
+		except Exception as e:
+			self.Log('UPDATE - Error getting country name: %s' % e)
+			pass
+		metadata.art.validate_keys(valid_image_background_names)
+		metadata.posters.validate_keys(valid_image_poster_names)

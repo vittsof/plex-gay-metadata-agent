@@ -88,10 +88,10 @@ class AEBN(Agent.Movies):
 			for result in search_results:
 				if len(file_studio) > 0:
 					try:
-						if result.findall('div[@class="movieDetails"]/div') = 4:
+						if len(result.findall('div[@class="movieDetails"]/div')) == 4:
 							studios = result.findall('div[@class="movieDetails"]/div[3]/div[2]/a')
 							self.Log('SEARCH - studios: %s' % len(studios))
-						else if result.findall('div[@class="movieDetails"]/div') = 3:
+						elif len(result.findall('div[@class="movieDetails"]/div')) == 3:
 							studios = result.findall('div[@class="movieDetails"]/div[2]/div[2]/a')
 							self.Log('SEARCH - studios: %s' % len(studios))
 					except:

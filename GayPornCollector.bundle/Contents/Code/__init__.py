@@ -79,11 +79,8 @@ class GayPornCollector(Agent.Movies):
 		file_name = file_name.lstrip(' ') #Removes white spaces on the left end.
 		file_name = file_name.lstrip('- ') #Removes white spaces on the left end.
 		file_name = file_name.rstrip(' ') #Removes white spaces on the right end.
-		self.Log('SEARCH - Split File Name: %s' % file_name.split(' '))
-		for piece in file_name.split(' '):
-			search_query_raw.append(cgi.escape(piece))
 
-		search_query="%20".join(search_query_raw)
+		search_query=urllib.quote(file_name)
 		self.Log('SEARCH - Search Query: %s' % search_query)
 		url = BASE_SEARCH_URL_SCENES + '?scene_title=' + search_query
 		response = urllib.urlopen(url)
@@ -222,7 +219,7 @@ class GayPornCollector(Agent.Movies):
 					role.name = cname
 					try:
 						c_id = cast['porn_star_id']
-						self.Log('UPDATE - cast: "%s"' % c_id)
+						self.Log('UPDATE - cast id: "%s"' % c_id)
 						url = BASE_SEARCH_URL_STARS + c_id
 						# Fetch HTML.
 						response = urllib.urlopen(url)
@@ -259,12 +256,13 @@ class GayPornCollector(Agent.Movies):
 		try:
 			metadata.collections.clear()
 			movie_names = results['related_porn_movie']
-			self.Log('UPDATE - collections count: "%s"' % len(movie_names))
-			if len(movie_names) > 0:
-				for movie in movie_names:
-					movie_name = movie['porn_movie_title']
-					self.Log('UPDATE - cast: "%s"' % movie_name)
-					collection = metadata.collections.add(movie_name)
+			if movie_names is not None:
+				self.Log('UPDATE - collections count: "%s"' % len(movie_names))
+				if len(movie_names) > 0:
+					for movie in movie_names:
+						movie_name = movie['porn_movie_title']
+						self.Log('UPDATE - cast: "%s"' % movie_name)
+						collection = metadata.collections.add(movie_name)
 		except Exception as e:
 			self.Log('UPDATE - Error getting collections name: %s' % e)
 			pass

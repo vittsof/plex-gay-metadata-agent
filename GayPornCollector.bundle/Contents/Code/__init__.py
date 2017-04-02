@@ -261,7 +261,7 @@ class GayPornCollector(Agent.Movies):
 				if len(movie_names) > 0:
 					for movie in movie_names:
 						movie_name = movie['porn_movie_title']
-						self.Log('UPDATE - cast: "%s"' % movie_name)
+						self.Log('UPDATE - collection: "%s"' % movie_name)
 						collection = metadata.collections.add(movie_name)
 		except Exception as e:
 			self.Log('UPDATE - Error getting collections name: %s' % e)

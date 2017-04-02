@@ -3,7 +3,7 @@ import cookielib, cgi, re, os, json, urllib
 
 PLUGIN_LOG_TITLE='Gay Porn Collector'	# Log Title
 
-VERSION_NO = '2017.04.01.0'
+VERSION_NO = '2017.04.02.0'
 
 # Delay used when requesting HTML, may be good to have to prevent being
 # banned from the site
@@ -258,12 +258,15 @@ class GayPornCollector(Agent.Movies):
 		# Try to get and process the country.
 		try:
 			metadata.collections.clear()
-			movie_name = results['related_porn_movie']
-			metadata.collections.add(movie_name)
-			self.Log('UPDATE - collections: "%s"', movie_name)
+			movie_names = results['related_porn_movie']
+			self.Log('UPDATE - collections count: "%s"' % len(movie_names))
+			if len(movie_names) > 0:
+				for movie in movie_names:
+					movie_name = movie['porn_movie_title']
+					self.Log('UPDATE - cast: "%s"' % movie_name)
+					collection = metadata.collections.add(movie_name)
 		except Exception as e:
 			self.Log('UPDATE - Error getting collections name: %s' % e)
 			pass
-
 		metadata.art.validate_keys(valid_image_background_names)
 		metadata.posters.validate_keys(valid_image_poster_names)

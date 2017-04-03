@@ -23,6 +23,7 @@ def Start():
 class AEBN(Agent.Movies):
 	name = 'AEBN'
 	languages = [Locale.Language.NoLanguage, Locale.Language.English]
+	fallback_agent = False
 	primary_provider = False
 	contributes_to = ['com.plexapp.agents.cockporn']
 
@@ -87,9 +88,12 @@ class AEBN(Agent.Movies):
 			for result in search_results:
 				if len(file_studio) > 0:
 					try:
-						studios = result.findall('div[@class="movieDetails"]/div[3]/div[2]/a')
-						self.Log('SEARCH - studios: %s' % len(studios))
-
+						if len(result.findall('div[@class="movieDetails"]/div')) == 4:
+							studios = result.findall('div[@class="movieDetails"]/div[3]/div[2]/a')
+							self.Log('SEARCH - studios: %s' % len(studios))
+						elif len(result.findall('div[@class="movieDetails"]/div')) == 3:
+							studios = result.findall('div[@class="movieDetails"]/div[2]/div[2]/a')
+							self.Log('SEARCH - studios: %s' % len(studios))
 					except:
 						studios = 'empty'
 						self.Log('SEARCH - studios: Empty')

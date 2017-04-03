@@ -1,11 +1,5 @@
 [
 	{
-			"id": "folders",
-			"label": "Folders where these items might be found (comma-separated list)",
-			"type": "text",
-			"default": "helix studios"
-	},
-	{
         "id": "cover",
         "label": "Cover Images to download",
         "type": "enum",

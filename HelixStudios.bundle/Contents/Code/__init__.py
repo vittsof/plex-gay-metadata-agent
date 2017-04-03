@@ -35,11 +35,19 @@ class HelixStudios(Agent.Movies):
 	name = 'Helix Studios'
 	languages = [Locale.Language.NoLanguage, Locale.Language.English]
 	primary_provider = False
+	fallback_agent = ['com.plexapp.agents.gayporncollector']
 	contributes_to = ['com.plexapp.agents.cockporn']
 
 	def Log(self, message, *args):
 		if Prefs['debug']:
 			Log(PLUGIN_LOG_TITLE + ' - ' + message, *args)
+
+	def intTest(self, s):
+		try:
+			int(s)
+			return int(s)
+		except ValueError:
+			return False
 
 	def search(self, results, media, lang, manual):
 		self.Log('-----------------------------------------------------------------------')
@@ -51,6 +59,8 @@ class HelixStudios(Agent.Movies):
 		self.Log('SEARCH - media.filename -  %s', media.filename)
 		self.Log('SEARCH - lang -  %s', lang)
 		self.Log('SEARCH - manual -  %s', manual)
+		self.Log('SEARCH - Prefs->cover -  %s', Prefs['cover'])
+		self.Log('SEARCH - Prefs->folders -  %s', Prefs['folders'])
 
 		if not media.items[0].parts[0].file:
 			return
@@ -175,10 +185,6 @@ class HelixStudios(Agent.Movies):
 
 		video_title = html.xpath('//div[@class="scene-title"]/span/text()')[0]
 		self.Log('UPDATE - video_title: "%s"' % video_title)
-		#video_release_date = html.xpath('//*[@id="main"]/div[1]/div[1]/div[2]/table/tr[1]/td[1]/text()')[1]
-		#self.Log('UPDATE - video_release_date: "%s"' % video_release_date)
-		#video_description = html.xpath('//*[@id="main"]/div[1]/div[1]/div[2]/table/tr/td/p/text()')
-		#self.Log('UPDATE - video_description: "%s"' % video_description)
 
 		# External 	https://cdn.helixstudios.com/img/300h/media/stills/hx109_scene52_001.jpg
 		# Member 	https://cdn.helixstudios.com/img/250w/media/stills/hx109_scene52_001.jpg
@@ -189,15 +195,13 @@ class HelixStudios(Agent.Movies):
 		try:
 			coverPrefs = Prefs['cover']
 			for image in video_image_list:
-				if i != coverPrefs or coverPrefs == "all available":
+				if i <= (self.intTest(coverPrefs)-1) or coverPrefs == "all available":
+					i = i + 1
 					thumb_url = image.get('src')
-					# self.Log('UPDATE - thumb_url: "%s"' % thumb_url)
 					poster_url = thumb_url.replace('300h', '1920w')
-					# self.Log('UPDATE - poster_url: "%s"' % poster_url)
 					valid_image_names.append(poster_url)
 					if poster_url not in metadata.posters:
 						try:
-							i += 1
 							metadata.posters[poster_url]=Proxy.Preview(HTTP.Request(thumb_url), sort_order = i)
 						except: pass
 		except Exception as e:

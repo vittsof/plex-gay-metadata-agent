@@ -1,8 +1,10 @@
 # Gay Scenes
+import os, platform
+
 # Description: Updated for the changes to the new site.
 PLUGIN_LOG_TITLE='Cock Porn'	# Log Title
 
-version = '2016.01.24.1'
+version = '2017.07.26.1'
 
 def Start():
 	pass
@@ -21,10 +23,17 @@ class CockPornAgent(Agent.Movies):
 		self.Log('-----------------------------------------------------------------------')
 		self.Log('SEARCH CALLED v.%s', version)
 		self.Log('SEARCH - media.filename - %s', media.filename.split('%2F')[-1])
-		filename=media.filename.split('%2F')[-1].replace('%20', ' ').replace('%2Emp4', '')
+		self.Log('SEARCH - Platform: %s %s', platform.system(), platform.release())
+
+		path_and_file = media.items[0].parts[0].file.lower()
+		self.Log('SEARCH - File Path: %s', path_and_file)
+
+		(file_dir, basename) = os.path.split(os.path.splitext(path_and_file)[0])
+		self.Log('SEARCH - File Name: %s' % basename)
+
 		self.Log('SEARCH - results - %s', results)
 		self.Log('SEARCH - media.title - %s', media.title)
-		results.Append(MetadataSearchResult(id=media.id, name=filename, score = 86, lang = lang))
+		results.Append(MetadataSearchResult(id=media.id, name=basename, score = 86, lang = lang))
 		self.Log('SEARCH - %s', results)
 
 

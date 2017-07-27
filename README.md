@@ -35,6 +35,11 @@ NONE OF THE FILENAMES FOR THE ADGENTS BELOW ARE CASE SENSITIVE.
 	KNOWN ISSUES
 	- Autoupdate may cause issues as it may cause a full metadata refresh when a new file is added.
 
+<h1>GayPornCollector.bundle</h1>
+	NAMING CONVENTION:
+		The title must be in the folder of the studio the title is for.
+		e.g. Location Path/Studio name/title.extention
+
 <h1>HelixStudios.bundle</h1>
 	NAMING CONVENTION:
 		Enclosing directory: Can be defined in settings

@@ -7,11 +7,8 @@ e.g. Location Path/Studio name/title.extention
 
 TODO:
 - Agent for movie titles
+- Search by scene id
+- Search by movie id
 
 Add metadata for
-- Actor image
-- Actor Role
-- Collections
-- Countries
-- Director
 - Ratings

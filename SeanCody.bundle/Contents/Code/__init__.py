@@ -78,7 +78,7 @@ class SeanCody(Agent.Movies):
 
 		groups = m.groupdict()
 		movie_url_name = re.sub('[^a-z0-9\-]', '', re.sub(' +', '-', groups['clip_name']))
-		movie_url = BASE_TOUR_MOVIE_URL % (groups['clip_number'], movie_url_name)
+		movie_url = BASE_TOUR_MOVIE_URL + groups['clip_number'] + movie_url_name
 
 		self.Log('SEARCH - Video URL: %s' % movie_url)
 		try:

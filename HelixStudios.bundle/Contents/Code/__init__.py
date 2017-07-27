@@ -97,7 +97,7 @@ class HelixStudios(Agent.Movies):
 
 		groups = m.groupdict()
 		movie_url_name = re.sub('\s+', '+', groups['clip_name'])
-		movie_url = BASE_SEARCH_URL % (movie_url_name)
+		movie_url = BASE_SEARCH_URL + movie_url_name
 		search_query_raw = list()
 		for piece in groups['clip_name'].split(' '):
 			if re.search('^[0-9A-Za-z]*$', piece.replace('!', '')) is not None:

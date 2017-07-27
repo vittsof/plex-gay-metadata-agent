@@ -11,17 +11,20 @@ REQUEST_DELAY = 0
 
 # URLS
 BASE_URL='http://www.gayporncollector.com'
-BASE_VIDEO_DETAILS_URL=BASE_URL + '%s'
+BASE_VIDEO_DETAILS_URL = BASE_URL + '%s'
 
 # Example Search URL
 # http://www.gayporncollector.com/wp-json/milkshake/v2/pornmovies/?movie_title=%23helix:%20Twink%20Confessions%202
-BASE_SEARCH_URL_MOVIES='http://www.gayporncollector.com/wp-json/milkshake/v2/pornmovies/?movie_title='
+BASE_SEARCH_URL_MOVIES = 'http://www.gayporncollector.com/wp-json/milkshake/v2/pornmovies/?movie_title='
 
 # http://www.gayporncollector.com/wp-json/milkshake/v2/pornscenes/?scene_title=Wet%20&%20Wild%20With%20Blake%20Mitchell
-BASE_SEARCH_URL_SCENES='http://www.gayporncollector.com/wp-json/milkshake/v2/pornscenes/'
+BASE_SEARCH_URL_SCENES = 'http://www.gayporncollector.com/wp-json/milkshake/v2/pornscenes/'
 
 # http://www.gayporncollector.com/wp-json/milkshake/v2/pornscenes/3620
-BASE_SEARCH_URL_STARS='http://www.gayporncollector.com/wp-json/milkshake/v2/pornstars/'
+BASE_SEARCH_URL_STARS = 'http://www.gayporncollector.com/wp-json/milkshake/v2/pornstars/'
+
+# File names to match for this agent
+movie_pattern = re.compile(Prefs['regex'])
 
 #replace # with %27 and ' with %23
 def Start():
@@ -80,9 +83,20 @@ class GayPornCollector(Agent.Movies):
 				self.Log('SEARCH - Skipping %s because the folder %s is not in the acceptable folders list: %s', basename, final_dir, ','.join(folder_list))
 				return
 
+		m = movie_pattern.search(basename)
+		if not m:
+			self.Log('SEARCH - Skipping %s because the file name is not in the expected format.', basename)
+			return
+
 		self.Log('SEARCH - File Name: %s', basename)
 
-		search_query_raw = list()
+		groups = m.groupdict()
+
+		scene_url_name = groups['clip_name']
+		scene_url = BASE_SEARCH_URL_SCENES + '?scene_title=' +  urllib.quote(scene_url_name)
+
+		self.Log('SEARCH - Scene URL: %s', scene_url)
+
 		file_studio = final_dir #used in if statment for studio name
 		self.Log('SEARCH - final_dir: %s' % final_dir)
 		self.Log('SEARCH - This is a scene: True')
@@ -92,34 +106,34 @@ class GayPornCollector(Agent.Movies):
 		file_name = file_name.lstrip('- ') #Removes white spaces on the left end.
 		file_name = file_name.rstrip(' ') #Removes white spaces on the right end.
 
-		search_query=urllib.quote(file_name)
-		self.Log('SEARCH - Search Query: %s' % search_query)
-		url = BASE_SEARCH_URL_SCENES + '?scene_title=' + search_query
-		response = urllib.urlopen(url)
+		response = urllib.urlopen(scene_url)
 		search_results = json.loads(response.read())
 		score=10
 
-		if 'mesage' not in search_results:
-			self.Log('SEARCH - results size exact match: %s' % len(search_results))
-			for result in search_results:
-				try:
-					studio = result['related_porn_studio'][0]['porn_studio_name']
-					self.Log('SEARCH - studio: %s' % studio)
-				except:
-					studio = 'empty'
-					self.Log('SEARCH - studios: Empty')
-				pass
-				video_title = result['title']
-				video_title = video_title.lstrip(' ') #Removes white spaces on the left end.
-				video_title = video_title.rstrip(' ') #Removes white spaces on the right end.
-				video_title = video_title.replace(':', '')
-				if studio.lower() == file_studio.lower() and video_title.lower() == file_name.lower():
-					self.Log('SEARCH - video title: %s' % video_title)
-					self.Log('SEARCH - video url: %s' % url)
-					self.Log('SEARCH - Exact Match "' + file_name.lower() + '" == "%s"' % video_title.lower())
-					self.Log('SEARCH - Studio Match "' + studio.lower() + '" == "%s"' % file_studio.lower())
-					results.Append(MetadataSearchResult(id = str(result['ID']), name = video_title, score = 100, lang = lang))
-					return
+		if 'message' in search_results:
+			self.Log('SEARCH - Skipping %s because the results are empty.', basename)
+			return
+
+		self.Log('SEARCH - results size exact match: %s' % len(search_results))
+		for result in search_results:
+			try:
+				studio = result['related_porn_studio'][0]['porn_studio_name']
+				self.Log('SEARCH - studio: %s' % studio)
+			except:
+				studio = 'empty'
+				self.Log('SEARCH - studios: Empty')
+			pass
+			video_title = result['title']
+			video_title = video_title.lstrip(' ') #Removes white spaces on the left end.
+			video_title = video_title.rstrip(' ') #Removes white spaces on the right end.
+			video_title = video_title.replace(':', '')
+			if studio.lower() == file_studio.lower() and video_title.lower() == file_name.lower():
+				self.Log('SEARCH - video title: %s' % video_title)
+				self.Log('SEARCH - video url: %s' % url)
+				self.Log('SEARCH - Exact Match "' + file_name.lower() + '" == "%s"' % video_title.lower())
+				self.Log('SEARCH - Studio Match "' + studio.lower() + '" == "%s"' % file_studio.lower())
+				results.Append(MetadataSearchResult(id = str(result['ID']), name = video_title, score = 100, lang = lang))
+				return
 
 	def update(self, metadata, media, lang, force=False):
 		self.Log('UPDATE CALLED')

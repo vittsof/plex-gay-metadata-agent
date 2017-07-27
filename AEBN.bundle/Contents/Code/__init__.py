@@ -1,9 +1,9 @@
 # AEBN
-import re, os, urllib, cgi
+import re, os, platform, urllib, cgi
 
 PLUGIN_LOG_TITLE='AEBN'	# Log Title
 
-VERSION_NO = '2017.03.12.1'
+VERSION_NO = '2017.07.26.0'
 
 # Delay used when requesting HTML, may be good to have to prevent being
 # banned from the site
@@ -34,19 +34,23 @@ class AEBN(Agent.Movies):
 	def search(self, results, media, lang, manual):
 		self.Log('-----------------------------------------------------------------------')
 		self.Log('SEARCH CALLED v.%s', VERSION_NO)
-		self.Log("SEARCH - media.title -  %s", media.title)
-		self.Log('SEARCH - media.items[0].parts[0].file -  %s', media.items[0].parts[0].file)
-		self.Log('SEARCH - media.primary_metadata.title -  %s', media.primary_metadata.title)
-		self.Log('SEARCH - media.items -  %s', media.items)
-		self.Log('SEARCH - media.filename -  %s', media.filename)
-		self.Log('SEARCH - lang -  %s', lang)
-		self.Log('SEARCH - manual -  %s', manual)
+		self.Log('SEARCH - Platform: %s %s', platform.system(), platform.release())
+		self.Log('SEARCH - media.title - %s', media.title)
+		self.Log('SEARCH - media.items[0].parts[0].file - %s', media.items[0].parts[0].file)
+		self.Log('SEARCH - media.primary_metadata.title - %s', media.primary_metadata.title)
+		self.Log('SEARCH - media.items - %s', media.items)
+		self.Log('SEARCH - media.filename - %s', media.filename)
+		self.Log('SEARCH - lang - %s', lang)
+		self.Log('SEARCH - manual - %s', manual)
+		self.Log('SEARCH - Prefs->cover - %s', Prefs['cover'])
+		self.Log('SEARCH - Prefs->folders - %s', Prefs['folders'])
+		self.Log('SEARCH - Prefs->regex - %s', Prefs['regex'])
 
 		if not media.items[0].parts[0].file:
 			return
 
 		path_and_file = media.items[0].parts[0].file.lower()
-		self.Log('SEARCH - File Path: %s' % path_and_file)
+		self.Log('SEARCH - File Path: %s', path_and_file)
 
 		path_and_file = os.path.splitext(path_and_file)[0]
 		(file_dir, basename) = os.path.split(os.path.splitext(path_and_file)[0])
@@ -55,6 +59,12 @@ class AEBN(Agent.Movies):
 		self.Log('SEARCH - File Name: %s', basename)
 
 		self.Log('SEARCH - Enclosing Folder: %s' % final_dir)
+
+		if Prefs['folders'] != "*":
+			folder_list = re.split(',\s*', Prefs['folders'].lower())
+			if final_dir not in folder_list:
+				self.Log('SEARCH - Skipping %s because the folder %s is not in the acceptable folders list: %s', basename, final_dir, ','.join(folder_list))
+				return
 
 		search_query_raw = list()
 		file_studio = file_name[file_name.find("(")+1:file_name.find(")")] #used in if statment for studio name
@@ -173,8 +183,8 @@ class AEBN(Agent.Movies):
 			return
 
 		file_path = media.items[0].parts[0].file
-		self.Log('UPDATE - File Path: %s' % file_path)
-		self.Log('UPDATE - metadata.id: %s' % metadata.id)
+		self.Log('UPDATE - File Path: %s', file_path)
+		self.Log('UPDATE - Video URL: %s', metadata.id)
 		url = metadata.id
 
 		# Fetch HTML.

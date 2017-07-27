@@ -1,9 +1,9 @@
 # Gay Porn Collector
-import cookielib, cgi, re, os, json, urllib
+import cookielib, cgi, re, os, platform, json, urllib
 
 PLUGIN_LOG_TITLE='Gay Porn Collector'	# Log Title
 
-VERSION_NO = '2017.04.02.0'
+VERSION_NO = '2017.07.26.0'
 
 # Delay used when requesting HTML, may be good to have to prevent being
 # banned from the site
@@ -51,30 +51,42 @@ class GayPornCollector(Agent.Movies):
 	def search(self, results, media, lang, manual):
 		self.Log('-----------------------------------------------------------------------')
 		self.Log('SEARCH CALLED v.%s', VERSION_NO)
-		self.Log("SEARCH - media.title -  %s", media.title)
-		self.Log('SEARCH - media.items[0].parts[0].file -  %s', media.items[0].parts[0].file)
-		self.Log('SEARCH - media.primary_metadata.title -  %s', media.primary_metadata.title)
-		self.Log('SEARCH - media.items -  %s', media.items)
-		self.Log('SEARCH - media.filename -  %s', media.filename)
-		self.Log('SEARCH - lang -  %s', lang)
-		self.Log('SEARCH - manual -  %s', manual)
-		self.Log('SEARCH - Prefs->cover -  %s', Prefs['cover'])
+		self.Log('SEARCH - Platform: %s %s', platform.system(), platform.release())
+		self.Log('SEARCH - media.title - %s', media.title)
+		self.Log('SEARCH - media.items[0].parts[0].file - %s', media.items[0].parts[0].file)
+		self.Log('SEARCH - media.primary_metadata.title - %s', media.primary_metadata.title)
+		self.Log('SEARCH - media.items - %s', media.items)
+		self.Log('SEARCH - media.filename - %s', media.filename)
+		self.Log('SEARCH - lang - %s', lang)
+		self.Log('SEARCH - manual - %s', manual)
+		self.Log('SEARCH - Prefs->cover - %s', Prefs['cover'])
+		self.Log('SEARCH - Prefs->folders - %s', Prefs['folders'])
+		self.Log('SEARCH - Prefs->regex - %s', Prefs['regex'])
 
 		if not media.items[0].parts[0].file:
 			return
 
 		path_and_file = media.items[0].parts[0].file.lower()
-		self.Log('SEARCH - File Path: %s' % path_and_file)
+		self.Log('SEARCH - File Path: %s', path_and_file)
 
 		(file_dir, basename) = os.path.split(os.path.splitext(path_and_file)[0])
 		final_dir = os.path.split(file_dir)[1]
-		file_name = basename.lower() #Sets string to lower.
+
+		self.Log('SEARCH - Enclosing Folder: %s', final_dir)
+
+		if Prefs['folders'] != "*":
+			folder_list = re.split(',\s*', Prefs['folders'].lower())
+			if final_dir not in folder_list:
+				self.Log('SEARCH - Skipping %s because the folder %s is not in the acceptable folders list: %s', basename, final_dir, ','.join(folder_list))
+				return
+
 		self.Log('SEARCH - File Name: %s', basename)
 
 		search_query_raw = list()
 		file_studio = final_dir #used in if statment for studio name
 		self.Log('SEARCH - final_dir: %s' % final_dir)
 		self.Log('SEARCH - This is a scene: True')
+		file_name = basename.lower() #Sets string to lower.
 		file_name = re.sub('\(([^\)]+)\)', '', file_name) #Removes anything inside of () and the () themselves.
 		file_name = file_name.lstrip(' ') #Removes white spaces on the left end.
 		file_name = file_name.lstrip('- ') #Removes white spaces on the left end.
@@ -115,8 +127,8 @@ class GayPornCollector(Agent.Movies):
 			return
 
 		file_path = media.items[0].parts[0].file
-		self.Log('UPDATE - File Path: %s' % file_path)
-		self.Log('UPDATE - metadata.id: %s' % metadata.id)
+		self.Log('UPDATE - File Path: %s', file_path)
+		self.Log('UPDATE - Video URL: %s', metadata.id)
 		url = BASE_SEARCH_URL_SCENES + metadata.id
 		# Fetch HTML.
 		response = urllib.urlopen(url)

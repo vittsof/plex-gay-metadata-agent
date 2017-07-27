@@ -1,8 +1,8 @@
 # Staxus
-import re, os, urllib, cgi
+import re, os, platform, urllib, cgi
 PLUGIN_LOG_TITLE='Staxus'	# Log Title
 
-VERSION_NO = '2017.03.12.0'
+VERSION_NO = '2017.07.26.0'
 
 # Delay used when requesting HTML, may be good to have to prevent being
 # banned from the site
@@ -41,13 +41,17 @@ class Staxus(Agent.Movies):
 	def search(self, results, media, lang, manual):
 		self.Log('-----------------------------------------------------------------------')
 		self.Log('SEARCH CALLED v.%s', VERSION_NO)
-		self.Log('SEARCH - media.title -  %s', media.title)
-		self.Log('SEARCH - media.items[0].parts[0].file -  %s', media.items[0].parts[0].file)
-		self.Log('SEARCH - media.primary_metadata.title -  %s', media.primary_metadata.title)
-		self.Log('SEARCH - media.items -  %s', media.items)
-		self.Log('SEARCH - media.filename -  %s', media.filename)
-		self.Log('SEARCH - lang -  %s', lang)
-		self.Log('SEARCH - manual -  %s', manual)
+		self.Log('SEARCH - Platform: %s %s', platform.system(), platform.release())
+		self.Log('SEARCH - media.title - %s', media.title)
+		self.Log('SEARCH - media.items[0].parts[0].file - %s', media.items[0].parts[0].file)
+		self.Log('SEARCH - media.primary_metadata.title - %s', media.primary_metadata.title)
+		self.Log('SEARCH - media.items - %s', media.items)
+		self.Log('SEARCH - media.filename - %s', media.filename)
+		self.Log('SEARCH - lang - %s', lang)
+		self.Log('SEARCH - manual - %s', manual)
+		self.Log('SEARCH - Prefs->cover - %s', Prefs['cover'])
+		self.Log('SEARCH - Prefs->folders - %s', Prefs['folders'])
+		self.Log('SEARCH - Prefs->regex - %s', Prefs['regex'])
 
 		if not media.items[0].parts[0].file:
 			return
@@ -105,8 +109,8 @@ class Staxus(Agent.Movies):
 			return
 
 		file_path = media.items[0].parts[0].file
-		self.Log('UPDATE - File Path: %s' % file_path)
-		self.Log('UPDATE - metadata.id: %s' % metadata.id)
+		self.Log('UPDATE - File Path: %s', file_path)
+		self.Log('UPDATE - Video URL: %s', metadata.id)
 		url = BASE_VIDEO_DETAILS_URL % metadata.id
 
 		# Fetch HTML

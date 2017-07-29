@@ -98,7 +98,7 @@ class GayPornCollector(Agent.Movies):
 		self.Log('SEARCH - Scene URL: %s', scene_url)
 
 		file_studio = final_dir #used in if statment for studio name
-		self.Log('SEARCH - final_dir: %s' % final_dir)
+		self.Log('SEARCH - final_dir: %s', final_dir)
 		self.Log('SEARCH - This is a scene: True')
 		file_name = basename.lower() #Sets string to lower.
 		file_name = re.sub('\(([^\)]+)\)', '', file_name) #Removes anything inside of () and the () themselves.
@@ -114,11 +114,11 @@ class GayPornCollector(Agent.Movies):
 			self.Log('SEARCH - Skipping %s because the results are empty.', basename)
 			return
 
-		self.Log('SEARCH - results size exact match: %s' % len(search_results))
+		self.Log('SEARCH - results size exact match: %s', len(search_results))
 		for result in search_results:
 			try:
 				studio = result['related_porn_studio'][0]['porn_studio_name']
-				self.Log('SEARCH - studio: %s' % studio)
+				self.Log('SEARCH - studio: %s', studio)
 			except:
 				studio = 'empty'
 				self.Log('SEARCH - studios: Empty')
@@ -128,10 +128,10 @@ class GayPornCollector(Agent.Movies):
 			video_title = video_title.rstrip(' ') #Removes white spaces on the right end.
 			video_title = video_title.replace(':', '')
 			if studio.lower() == file_studio.lower() and video_title.lower() == file_name.lower():
-				self.Log('SEARCH - video title: %s' % video_title)
-				self.Log('SEARCH - video url: %s' % url)
-				self.Log('SEARCH - Exact Match "' + file_name.lower() + '" == "%s"' % video_title.lower())
-				self.Log('SEARCH - Studio Match "' + studio.lower() + '" == "%s"' % file_studio.lower())
+				self.Log('SEARCH - video title: %s', video_title)
+				self.Log('SEARCH - video url: %s', result['link'])
+				self.Log('SEARCH - Exact Match "' + file_name.lower() + '" == "%s"', video_title.lower())
+				self.Log('SEARCH - Studio Match "' + studio.lower() + '" == "%s"', file_studio.lower())
 				results.Append(MetadataSearchResult(id = str(result['ID']), name = video_title, score = 100, lang = lang))
 				return
 
@@ -152,7 +152,7 @@ class GayPornCollector(Agent.Movies):
 		metadata.tagline = results['link']
 		# Set video title.
 		video_title = results['title']
-		self.Log('UPDATE - video_title: "%s"' % video_title)
+		self.Log('UPDATE - video_title: "%s"', video_title)
 
 		metadata.title = video_title
 
@@ -161,13 +161,13 @@ class GayPornCollector(Agent.Movies):
 		# Try to get and process the director posters.
 		valid_image_poster_names = list()
 		try:
-			self.Log('UPDATE - video_image_list: "%s"' % results['poster'])
+			self.Log('UPDATE - video_image_list: "%s"', results['poster'])
 			poster_url = results['poster']['guid']
 			valid_image_poster_names.append(poster_url)
 			if poster_url not in metadata.posters:
 				metadata.posters[poster_url]=Proxy.Preview(HTTP.Request(poster_url))
 		except Exception as e:
-			self.Log('UPDATE - Error getting posters: %s' % e)
+			self.Log('UPDATE - Error getting posters: %s', e)
 			pass
 
 		# Try to get and process the background art.
@@ -175,7 +175,7 @@ class GayPornCollector(Agent.Movies):
 		try:
 			i = 0
 			video_image_list = results['gallery']
-			self.Log('UPDATE - video_image_list: "%s"' % video_image_list)
+			self.Log('UPDATE - video_image_list: "%s"', video_image_list)
 			coverPrefs = Prefs['cover']
 			for image in video_image_list:
 				if i <= (self.intTest(coverPrefs)-1) or coverPrefs == "all available":
@@ -187,7 +187,7 @@ class GayPornCollector(Agent.Movies):
 							metadata.art[art_url]=Proxy.Preview(HTTP.Request(art_url), sort_order = i)
 						except: pass
 		except Exception as e:
-			self.Log('UPDATE - Error getting posters: %s' % e)
+			self.Log('UPDATE - Error getting posters: %s', e)
 			pass
 
 		# Try to get description text.
@@ -196,29 +196,29 @@ class GayPornCollector(Agent.Movies):
 			self.Log('UPDATE - About Text %s', about_text)
 			metadata.summary=about_text
 		except Exception as e:
-			self.Log('UPDATE - Error getting description text: %s' % e)
+			self.Log('UPDATE - Error getting description text: %s', e)
 			pass
 
 		# Try to get and process the release date.
 		try:
 			rd=results['release_date']
-			self.Log('UPDATE - Release Date: %s' % rd)
+			self.Log('UPDATE - Release Date: %s', rd)
 			metadata.originally_available_at = Datetime.ParseDate(rd).date()
 			metadata.year = metadata.originally_available_at.year
 		except Exception as e:
-			self.Log('UPDATE - Error getting release date: %s' % e)
+			self.Log('UPDATE - Error getting release date: %s', e)
 			pass
 
 		# Try to get and process the video genres.
 		try:
 			metadata.genres.clear()
 			genres = results['porn_scene_genres']
-			self.Log('UPDATE - video_genres count from scene: "%s"' % len(genres))
-			self.Log('UPDATE - video_genres from scene: "%s"' % genres)
+			self.Log('UPDATE - video_genres count from scene: "%s"', len(genres))
+			self.Log('UPDATE - video_genres from scene: "%s"', genres)
 			for genre in genres:
 				metadata.genres.add(genre['name'])
 		except Exception as e:
-			self.Log('UPDATE - Error getting video genres: %s' % e)
+			self.Log('UPDATE - Error getting video genres: %s', e)
 			pass
 
 		# Crew.
@@ -229,35 +229,40 @@ class GayPornCollector(Agent.Movies):
 			director.name = results['scene_director']
 			self.Log('UPDATE - director: "%s"', director)
 		except Exception as e:
-			self.Log('UPDATE - Error getting director: %s' % e)
+			self.Log('UPDATE - Error getting director: %s', e)
 			pass
 
 		# Try to get and process the video cast.
 		try:
 			metadata.roles.clear()
 			casts = results['related_porn_stars']
-			self.Log('UPDATE - cast scene count: "%s"' % len(casts))
+			self.Log('UPDATE - cast scene count: "%s"', len(casts))
 			if len(casts) > 0:
+				roleCount = {}
 				for cast in casts:
 					cname = cast['porn_star_name']
-					self.Log('UPDATE - cast: "%s"' % cname)
+					self.Log('UPDATE - cast: "%s"', cname)
 					role = metadata.roles.new()
 					role.name = cname
 					try:
 						c_id = cast['porn_star_id']
-						self.Log('UPDATE - cast id: "%s"' % c_id)
+						self.Log('UPDATE - cast id: "%s"', c_id)
 						url = BASE_SEARCH_URL_STARS + c_id
 						# Fetch HTML.
 						response = urllib.urlopen(url)
 						star = json.loads(response.read())
 						role.photo = star['poster']['guid']
-						role.role = star['role']
+						roleCount[star['role']] = 1 + roleCount.get(star['role'],0)
+						if roleCount[star['role']] != 1:
+							role.role = star['role'] + " " + str(roleCount[star['role']])
+						else:
+							role.role = star['role']
 					except Exception as e:
-						self.Log('UPDATE - Error getting cast: %s' % e)
+						self.Log('UPDATE - Error getting cast: %s', e)
 						pass
 
 		except Exception as e:
-			self.Log('UPDATE - Error getting cast: %s' % e)
+			self.Log('UPDATE - Error getting cast: %s', e)
 			pass
 
 		# Try to get and process the studio name.
@@ -266,7 +271,7 @@ class GayPornCollector(Agent.Movies):
 			self.Log('UPDATE - studio: "%s"', studio)
 			metadata.studio=studio
 		except Exception as e:
-			self.Log('UPDATE - Error getting studio name: %s' % e)
+			self.Log('UPDATE - Error getting studio name: %s', e)
 			pass
 
 		# Try to get and process the country.
@@ -276,21 +281,21 @@ class GayPornCollector(Agent.Movies):
 			metadata.countries.add(country_name)
 			self.Log('UPDATE - country: "%s"', country_name)
 		except Exception as e:
-			self.Log('UPDATE - Error getting country name: %s' % e)
+			self.Log('UPDATE - Error getting country name: %s', e)
 			pass
 		# Try to get and process the country.
 		try:
 			metadata.collections.clear()
 			movie_names = results['related_porn_movie']
 			if movie_names is not None:
-				self.Log('UPDATE - collections count: "%s"' % len(movie_names))
+				self.Log('UPDATE - collections count: "%s"', len(movie_names))
 				if len(movie_names) > 0:
 					for movie in movie_names:
 						movie_name = movie['porn_movie_title']
-						self.Log('UPDATE - collection: "%s"' % movie_name)
+						self.Log('UPDATE - collection: "%s"', movie_name)
 						collection = metadata.collections.add(movie_name)
 		except Exception as e:
-			self.Log('UPDATE - Error getting collections name: %s' % e)
+			self.Log('UPDATE - Error getting collections name: %s', e)
 			pass
 		metadata.art.validate_keys(valid_image_background_names)
 		metadata.posters.validate_keys(valid_image_poster_names)

@@ -4,7 +4,7 @@ import platform
 # Description: Updated for the changes to the new site.
 PLUGIN_LOG_TITLE='Cock Porn'	# Log Title
 
-version = '2017.07.26.1'
+VERSION_NO = '2017.07.26.1'
 
 def Start():
 	pass
@@ -21,9 +21,9 @@ class CockPornAgent(Agent.Movies):
 
 	def search(self, results, media, lang):
 		self.Log('-----------------------------------------------------------------------')
-		self.Log('SEARCH CALLED v.%s', version)
-		self.Log('SEARCH - media.filename - %s', media.filename.split('%2F')[-1])
+		self.Log('SEARCH CALLED v.%s', VERSION_NO)
 		self.Log('SEARCH - Platform: %s %s', platform.system(), platform.release())
+		self.Log('SEARCH - media.filename - %s', media.filename.split('%2F')[-1])
 		self.Log('SEARCH - results - %s', results)
 		self.Log('SEARCH - media.title - %s', media.title)
 		results.Append(MetadataSearchResult(id=media.id, name=media.name, score = 86, lang = lang))

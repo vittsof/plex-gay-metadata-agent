@@ -1,10 +1,9 @@
 # SeanCody
-import re, os
-import simplejson as json
+import re, os, platform, simplejson as json
 
 PLUGIN_LOG_TITLE = 'Sean Cody'    # Log Title
 
-VERSION_NO = '2017.03.12.0'
+VERSION_NO = '2017.07.26.0'
 
 # Delay used when requesting HTML, may be good to have to prevent being
 # banned from the site
@@ -20,13 +19,11 @@ BASE_TOUR_MOVIE_URL = 'http://www.seancody.com/tour/movie/%s/%s/trailer'
 # File names to match for this agent
 movie_pattern = re.compile(Prefs['regex'])
 
-
 def Start():
 	HTTP.CacheTime = CACHE_1WEEK
 	HTTP.Headers['User-agent'] = 'Mozilla/4.0 (compatible; MSIE 8.0; ' \
 		'Windows NT 6.2; Trident/4.0; SLCC2; .NET CLR 2.0.50727; ' \
 		'.NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0)'
-
 
 class SeanCody(Agent.Movies):
 	name = 'Sean Cody'
@@ -42,13 +39,17 @@ class SeanCody(Agent.Movies):
 	def search(self, results, media, lang, manual):
 		self.Log('-----------------------------------------------------------------------')
 		self.Log('SEARCH CALLED v.%s', VERSION_NO)
-		self.Log('SEARCH - media.title -  %s', media.title)
-		self.Log('SEARCH - media.items[0].parts[0].file -  %s', media.items[0].parts[0].file)
-		self.Log('SEARCH - media.primary_metadata.title -  %s', media.primary_metadata.title)
-		self.Log('SEARCH - media.items -  %s', media.items)
-		self.Log('SEARCH - media.filename -  %s', media.filename)
-		self.Log('SEARCH - lang -  %s', lang)
-		self.Log('SEARCH - manual -  %s', manual)
+		self.Log('SEARCH - Platform: %s %s', platform.system(), platform.release())
+		self.Log('SEARCH - media.title - %s', media.title)
+		self.Log('SEARCH - media.items[0].parts[0].file - %s', media.items[0].parts[0].file)
+		self.Log('SEARCH - media.primary_metadata.title - %s', media.primary_metadata.title)
+		self.Log('SEARCH - media.items - %s', media.items)
+		self.Log('SEARCH - media.filename - %s', media.filename)
+		self.Log('SEARCH - lang - %s', lang)
+		self.Log('SEARCH - manual - %s', manual)
+		self.Log('SEARCH - Prefs->cover - %s', Prefs['cover'])
+		self.Log('SEARCH - Prefs->folders - %s', Prefs['folders'])
+		self.Log('SEARCH - Prefs->regex - %s', Prefs['regex'])
 
 		if not media.items[0].parts[0].file:
 			return
@@ -56,28 +57,28 @@ class SeanCody(Agent.Movies):
 		path_and_file = media.items[0].parts[0].file.lower()
 		self.Log('SEARCH - File Path: %s', path_and_file)
 
-		(file_dir, basename) = \
-			os.path.split(os.path.splitext(path_and_file)[0])
+		(file_dir, basename) = os.path.split(os.path.splitext(path_and_file)[0])
 		final_dir = os.path.split(file_dir)[1]
 
-		folder_list = re.split(',\s*', Prefs['folders'].lower())
-		if final_dir not in folder_list:
-			self.Log('SEARCH - Skipping %s because the '
-					 'folder %s is not in the acceptable folders '
-					 'list: %s' %
-					 (basename, final_dir, ','.join(folder_list)))
-			return
+		self.Log('SEARCH - Enclosing Folder: %s', final_dir)
+
+		if Prefs['folders'] != "*":
+			folder_list = re.split(',\s*', Prefs['folders'].lower())
+			if final_dir not in folder_list:
+				self.Log('SEARCH - Skipping %s because the folder %s is not in the acceptable folders list: %s', basename, final_dir, ','.join(folder_list))
+				return
 
 		m = movie_pattern.search(basename)
 		if not m:
-			self.Log('SEARCH - Skipping %s because the '
-					 'file name is not in the expected format.' % basename)
+			self.Log('SEARCH - Skipping %s because the file name is not in the expected format.', basename)
 			return
 
+		self.Log('SEARCH - File Name: %s' % basename)
+		self.Log('SEARCH - Split File Name: %s' % basename.split(' '))
+
 		groups = m.groupdict()
-		movie_url_name = \
-			re.sub('[^a-z0-9\-]', '', re.sub(' +', '-', groups['clip_name']))
-		movie_url = BASE_TOUR_MOVIE_URL % (groups['clip_number'], movie_url_name)
+		movie_url_name = re.sub('[^a-z0-9\-]', '', re.sub(' +', '-', groups['clip_name']))
+		movie_url = BASE_TOUR_MOVIE_URL + groups['clip_number'] + movie_url_name
 
 		self.Log('SEARCH - Video URL: %s' % movie_url)
 		try:
@@ -98,8 +99,7 @@ class SeanCody(Agent.Movies):
 		metadata.summary = about_text
 
 	def fetch_release_date(self, html, metadata):
-		release_date = \
-			html.xpath('//*[@id="player-wrapper"]/div/span/time/text()')[0].strip()
+		release_date = html.xpath('//*[@id="player-wrapper"]/div/span/time/text()')[0].strip()
 		self.Log('UPDATE - Release Date - New: %s' % release_date)
 		metadata.originally_available_at = Datetime.ParseDate(release_date).date()
 		metadata.year = metadata.originally_available_at.year
@@ -128,11 +128,10 @@ class SeanCody(Agent.Movies):
 
 		# convert the gallery source variable to parseable JSON and then
 		# grab the useful bits out of it
-		gallery_info = \
-			json.loads(html.xpath('/html/body/div[1]/div/div/section[2]/div/script/text()')[0].
-				replace('\n', '').
-				replace('var gallerySource = ', '').
-				replace('};', '}'))
+		gallery_info = json.loads(html.xpath('/html/body/div[1]/div/div/section[2]/div/script/text()')[0].
+			replace('\n', '').
+			replace('var gallerySource = ', '').
+			replace('};', '}'))
 
 		try:
 			coverPrefs = int(Prefs['cover'])
@@ -171,8 +170,8 @@ class SeanCody(Agent.Movies):
 			return
 
 		file_path = media.items[0].parts[0].file
-		self.Log('UPDATE - File Path: %s' % file_path)
-		self.Log('UPDATE - Movie URL: %s' % metadata.id)
+		self.Log('UPDATE - File Path: %s', file_path)
+		self.Log('UPDATE - Video URL: %s', metadata.id)
 
 		# Fetch HTML
 		html = HTML.ElementFromURL(metadata.id, sleep=REQUEST_DELAY)
@@ -181,8 +180,7 @@ class SeanCody(Agent.Movies):
 		metadata.tagline = metadata.id
 
 		# The Title
-		video_title = \
-			html.xpath('//*[@id="player-wrapper"]/div/h1/text()')[0]
+		video_title = html.xpath('//*[@id="player-wrapper"]/div/h1/text()')[0]
 
 		# Try to get description text
 		try:

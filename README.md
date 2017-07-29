@@ -10,9 +10,8 @@ A Plex agent for fetching gay adult video metadata. https://forums.plex.tv/discu
 	<b>Raspberry Pi:</b> /var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Plug-ins<br />
 2. Login to the web interface and open settings.<br />
 3. In Settings > Server > Agents select "Gay Adult" and check all required agents.<br />
-4. In Settings > Server > Agents move The Movie Database to second to last and Local Media Assets (Movies) to last.<br />
-5. In Settings > Server > Agents > The Movie Database > check "Include adult content"<br />
-6. Create a new library or change the agent of an existing library to the "Gay Adult" agent.
+4. In Settings > Server > Agents move AEBN to second to last and Local Media Assets (Movies) to last.<br />
+6. Create a new library or change the agent of an existing library to the "Gay Adult" agent, then refresh all metadata.
 
 <h1>Wiki</h1>
 More documentation can be found in the <a href="https://github.com/iklier/plex-gay-metadata-agent/wiki">wiki</a>.<br />

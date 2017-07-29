@@ -14,6 +14,9 @@ BASE_URL='http://gay.theater.aebn.net'
 BASE_VIDEO_DETAILS_URL=BASE_URL + '%s'
 BASE_SEARCH_URL='http://gay.theater.aebn.net/dispatcher/fts?userQuery=%s&searchType=movie&imageType=Small'
 
+# File names to match for this agent
+file_name_pattern = re.compile(Prefs['regex'])
+
 def Start():
 	HTTP.CacheTime = CACHE_1WEEK
 	HTTP.Headers['User-agent'] = 'Mozilla/4.0 (compatible; MSIE 8.0; ' \
@@ -58,52 +61,59 @@ class AEBN(Agent.Movies):
 		file_name = basename.lower() #Sets string to lower.
 		self.Log('SEARCH - File Name: %s', basename)
 
-		self.Log('SEARCH - Enclosing Folder: %s' % final_dir)
+		self.Log('SEARCH - Enclosing Folder: %s', final_dir)
 
 		if Prefs['folders'] != "*":
 			folder_list = re.split(',\s*', Prefs['folders'].lower())
 			if final_dir not in folder_list:
-				self.Log('SEARCH - Skipping %s because the folder %s is not in the acceptable folders list: %s', basename, final_dir, ','.join(folder_list))
+				self.Log('SEARCH - Skipping %s because the folder %s is not in the acceptable folders list: %s', file_name, final_dir, ','.join(folder_list))
 				return
 
+		m = file_name_pattern.search(file_name)
+		if not m:
+			self.Log('SEARCH - Skipping %s because the file name is not in the expected format.', file_name)
+			return
+
+		groups = m.groupdict()
+
 		search_query_raw = list()
-		file_studio = file_name[file_name.find("(")+1:file_name.find(")")] #used in if statment for studio name
-		self.Log('SEARCH - Studio: %s' % file_studio)
-		if file_name.find("scene") > 0:
+		file_studio = groups['studio']
+		self.Log('SEARCH - Studio: %s', file_studio)
+		if groups['clip_name'].find("scene") > 0:
 			self.Log('SEARCH - This is a scene: True')
-			scene = file_name.split("scene",1)[1].lstrip(' ')
+			scene = groups['clip_name'].split("scene",1)[1].lstrip(' ')
 			file_name = file_name.split("scene",1)[0].rstrip(' ')
-			self.Log('SEARCH - Movie: %s' % file_name)
-			self.Log('SEARCH - Scene: %s' % scene)
+			self.Log('SEARCH - Movie: %s', file_name)
+			self.Log('SEARCH - Scene: %s', scene)
 			for piece in file_name.split(' '):
 				search_query_raw.append(cgi.escape(piece))
 		else:
 			self.Log('SEARCH - This is a scene: False')
-			file_name = re.sub('\(([^\)]+)\)', '', file_name) #Removes anything inside of () and the () themselves.
+			file_name = groups['clip_name']
 			file_name = file_name.lstrip(' ') #Removes white spaces on the left end.
 			file_name = file_name.lstrip('- ') #Removes white spaces on the left end.
 			file_name = file_name.rstrip(' ') #Removes white spaces on the right end.
-			self.Log('SEARCH - Split File Name: %s' % file_name.split(' '))
+			self.Log('SEARCH - Split File Name: %s', file_name.split(' '))
 			for piece in file_name.split(' '):
 				search_query_raw.append(cgi.escape(piece))
 		search_query="+".join(search_query_raw)
-		self.Log('SEARCH - Search Query: %s' % search_query)
+		self.Log('SEARCH - Search Query: %s', search_query)
 		html=HTML.ElementFromURL(BASE_SEARCH_URL % search_query, sleep=REQUEST_DELAY)
 		score=10
 		search_results=html.xpath('//div[@class="component main100 exactMatch"]/div[2]/div/div/div[2]')
 
 		# Enumerate the search results looking for an exact match. The hope is that by eliminating special character words from the title and searching the remainder that we will get the expected video in the results.
 		if len(search_results) > 0:
-			self.Log('SEARCH - results size exact match: %s' % len(search_results))
+			self.Log('SEARCH - results size exact match: %s', len(search_results))
 			for result in search_results:
 				if len(file_studio) > 0:
 					try:
 						if len(result.findall('div[@class="movieDetails"]/div')) == 4:
 							studios = result.findall('div[@class="movieDetails"]/div[3]/div[2]/a')
-							self.Log('SEARCH - studios: %s' % len(studios))
+							self.Log('SEARCH - studios: %s', len(studios))
 						elif len(result.findall('div[@class="movieDetails"]/div')) == 3:
 							studios = result.findall('div[@class="movieDetails"]/div[2]/div[2]/a')
-							self.Log('SEARCH - studios: %s' % len(studios))
+							self.Log('SEARCH - studios: %s', len(studios))
 					except:
 						studios = 'empty'
 						self.Log('SEARCH - studios: Empty')
@@ -114,15 +124,15 @@ class AEBN(Agent.Movies):
 						video_title = video_title.rstrip(' ') #Removes white spaces on the right end.
 						video_title = video_title.replace(':', '')
 						if studio.text.lower() == file_studio.lower() and video_title.lower() == file_name.lower():
-							self.Log('SEARCH - video title: %s' % video_title)
+							self.Log('SEARCH - video title: %s', video_title)
 							video_url = result.findall('div[@class="movie"]/div/a')[0].get('href')
 							if BASE_URL not in video_url:
 								video_url = BASE_URL + video_url
-							self.Log('SEARCH - video url: %s' % video_url)
+							self.Log('SEARCH - video url: %s', video_url)
 							image_url = result.findall('div[@class="movie"]/div/a/img')[0].get("src")
 							if image_url[:2] == "//":
 								image_url = 'http:' + image_url
-							self.Log('SEARCH - image url: %s' % image_url)
+							self.Log('SEARCH - image url: %s', image_url)
 							self.Log('SEARCH - Exact Match "' + file_name.lower() + '" == "%s"' % video_title.lower())
 							self.Log('SEARCH - Studio Match "' + studio.text.lower() + '" == "%s"' % file_studio.lower())
 							results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 100, lang = lang))
@@ -133,38 +143,38 @@ class AEBN(Agent.Movies):
 					video_title = video_title.rstrip(' ') #Removes white spaces on the right end.
 					video_title = video_title.replace(':', '')
 					if video_title.lower() == file_name.lower():
-						self.Log('SEARCH - video title: %s' % video_title)
+						self.Log('SEARCH - video title: %s', video_title)
 						video_url = result.findall('div[@class="movie"]/div/a')[0].get('href')
 						if BASE_URL not in video_url:
 							video_url = BASE_URL + video_url
-						self.Log('SEARCH - video url: %s' % video_url)
+						self.Log('SEARCH - video url: %s', video_url)
 						image_url = result.findall('div[@class="movie"]/div/a/img')[0].get("src")
 						if image_url[:2] == "//":
 							image_url = 'http:' + image_url
-						self.Log('SEARCH - image url: %s' % image_url)
+						self.Log('SEARCH - image url: %s', image_url)
 						self.Log('SEARCH - Exact Match "' + file_name.lower() + '" == "%s"' % video_title.lower())
 						results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 100, lang = lang))
 						return
 		else:
 			search_results=html.xpath('//*[@class="movie"]')
-			self.Log('SEARCH - results size: %s' % len(search_results))
+			self.Log('SEARCH - results size: %s', len(search_results))
 			for result in search_results:
 				#result=result.find('')
 				video_title=result.findall("div/a")[0].get("title")
 				video_title = video_title.lstrip(' ') #Removes white spaces on the left end.
 				video_title = video_title.rstrip(' ') #Removes white spaces on the right end.
 				video_title = video_title.replace(':', '')
-				self.Log('SEARCH - video title: %s' % video_title)
+				self.Log('SEARCH - video title: %s', video_title)
 				# Check the alt tag which includes the full title with special characters against the video title. If we match we nominate the result as the proper metadata. If we don't match we reply with a low score.
 				if video_title.lower() == file_name.lower():
 					video_url = result.findall("div/a")[0].get('href')
 					if BASE_URL not in video_url:
 						video_url = BASE_URL + video_url
-					self.Log('SEARCH - video url: %s' % video_url)
+					self.Log('SEARCH - video url: %s', video_url)
 					image_url = result.findall("div/a/img")[0].get("src")
 					if image_url[:2] == "//":
 						image_url = 'http:' + image_url
-					self.Log('SEARCH - image url: %s' % image_url)
+					self.Log('SEARCH - image url: %s', image_url)
 					self.Log('SEARCH - Exact Match "' + file_name.lower() + '" == "%s"' % video_title.lower())
 					results.Append(MetadataSearchResult(id = video_url, name = video_title, score = 98, lang = lang))
 					return
@@ -252,17 +262,17 @@ class AEBN(Agent.Movies):
 			about_text=' '.join(str(x.text_content().strip()) for x in raw_about_text)
 			metadata.summary=about_text
 		except Exception as e:
-			self.Log('UPDATE - Error getting description text: %s' % e)
+			self.Log('UPDATE - Error getting description text: %s', e)
 			pass
 
 		# Try to get and process the release date.
 		try:
 			rd=html.xpath('//span[@itemprop="datePublished"]/text()')[0]
-			self.Log('UPDATE - Release Date: %s' % rd)
+			self.Log('UPDATE - Release Date: %s', rd)
 			metadata.originally_available_at = Datetime.ParseDate(rd).date()
 			metadata.year = metadata.originally_available_at.year
 		except Exception as e:
-			self.Log('UPDATE - Error getting release date: %s' % e)
+			self.Log('UPDATE - Error getting release date: %s', e)
 			pass
 
 		# Try to get and process the video genres.
@@ -286,7 +296,7 @@ class AEBN(Agent.Movies):
 					if (len(genre) > 0):
 						metadata.genres.add(genre)
 		except Exception as e:
-			self.Log('UPDATE - Error getting video genres: %s' % e)
+			self.Log('UPDATE - Error getting video genres: %s', e)
 			pass
 
 		# Crew.
@@ -297,7 +307,7 @@ class AEBN(Agent.Movies):
 			self.Log('UPDATE - director: "%s"', director)
 			metadata.directors.add(director)
 		except Exception as e:
-			self.Log('UPDATE - Error getting director: %s' % e)
+			self.Log('UPDATE - Error getting director: %s', e)
 			pass
 
 		# Try to get and process the video cast.
@@ -349,7 +359,7 @@ class AEBN(Agent.Movies):
 							role = metadata.roles.new()
 							role.name = cname
 		except Exception as e:
-			self.Log('UPDATE - Error getting cast: %s' % e)
+			self.Log('UPDATE - Error getting cast: %s', e)
 			pass
 
 		# Try to get and process the studio name.
@@ -358,7 +368,7 @@ class AEBN(Agent.Movies):
 			self.Log('UPDATE - studio: "%s"', studio)
 			metadata.studio=studio
 		except Exception as e:
-			self.Log('UPDATE - Error getting studio name: %s' % e)
+			self.Log('UPDATE - Error getting studio name: %s', e)
 			pass
 
 		metadata.content_rating = 'X'

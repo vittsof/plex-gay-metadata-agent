@@ -24,7 +24,7 @@ BASE_SEARCH_URL_SCENES = 'http://www.gayporncollector.com/wp-json/milkshake/v2/p
 BASE_SEARCH_URL_STARS = 'http://www.gayporncollector.com/wp-json/milkshake/v2/pornstars/'
 
 # File names to match for this agent
-movie_pattern = re.compile(Prefs['regex'])
+file_name_pattern = re.compile(Prefs['regex'])
 
 #replace # with %27 and ' with %23
 def Start():
@@ -83,7 +83,7 @@ class GayPornCollector(Agent.Movies):
 				self.Log('SEARCH - Skipping %s because the folder %s is not in the acceptable folders list: %s', basename, final_dir, ','.join(folder_list))
 				return
 
-		m = movie_pattern.search(basename)
+		m = file_name_pattern.search(basename)
 		if not m:
 			self.Log('SEARCH - Skipping %s because the file name is not in the expected format.', basename)
 			return

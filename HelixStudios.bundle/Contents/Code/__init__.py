@@ -22,7 +22,7 @@ BASE_VIDEO_DETAILS_URL = 'https://www.helixstudios.net/video/%s'
 BASE_SEARCH_URL = 'https://www.helixstudios.net/videos/?q=%s'
 
 # File names to match for this agent
-movie_pattern = re.compile(Prefs['regex'])
+file_name_pattern = re.compile(Prefs['regex'])
 
 # Example File Name:
 # https://media.helixstudios.com/scenes/hx111_scene2/hx111_scene2_member_1080p.mp4
@@ -88,7 +88,7 @@ class HelixStudios(Agent.Movies):
 				self.Log('SEARCH - Skipping %s because the folder %s is not in the acceptable folders list: %s', basename, final_dir, ','.join(folder_list))
 				return
 
-		m = movie_pattern.search(basename)
+		m = file_name_pattern.search(basename)
 		if not m:
 			self.Log('SEARCH - Skipping %s because the file name is not in the expected format.', basename)
 			return

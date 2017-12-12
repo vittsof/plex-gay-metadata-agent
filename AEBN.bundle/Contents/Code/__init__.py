@@ -100,7 +100,7 @@ class AEBN(Agent.Movies):
 		self.Log('SEARCH - Search Query: %s', search_query)
 		html=HTML.ElementFromURL(BASE_SEARCH_URL % search_query, sleep=REQUEST_DELAY)
 		score=10
-		search_results=html.xpath('//div[@class="component main100 exactMatch"]/div[2]/div/div/div[2]')
+		search_results=html.xpath('//div[@class="component main100 exactMatch"]/div[@class="exactMatchMovie"]/div[2]')
 
 		# Enumerate the search results looking for an exact match. The hope is that by eliminating special character words from the title and searching the remainder that we will get the expected video in the results.
 		if len(search_results) > 0:
